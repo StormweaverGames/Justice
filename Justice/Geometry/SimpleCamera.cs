@@ -55,6 +55,17 @@ namespace Justice.Geometry
             set { myUp = value; }
         }
 
+        public float NearPlane
+        {
+            get { return myNearField; }
+            set { myNearField = value; }
+        }
+        public float FarPlane
+        {
+            get { return myFarField; }
+            set { myFarField = value; }
+        }
+
         public SimpleCamera()
             : this(DEFAULT_POSTION, DEFAULT_NORMAL, DEFAULT_UP, DEFAULT_FOV, DEFAULT_ASPECT_RATIO, DEFAULT_NEAR_FIELD, DEFAULT_FAR_FIELD)
         {

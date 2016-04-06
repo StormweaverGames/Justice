@@ -12,7 +12,7 @@ namespace Justice.Controls
 {
     public class SimpleEntityController : IInputController
     {
-        const float DEFAULT_ROTATION_SPEED = 0.05f;
+        const float DEFAULT_ROTATION_SPEED = MathHelper.Pi;
         const float DEFUALT_MOVE_SPEED = 5.0f;
 
         private Entity myEntity;
@@ -47,6 +47,11 @@ namespace Justice.Controls
         {
             Vector3 velocityChange = Vector3.Zero;
 
+            float hSpeedMultiplier = 1.0f;
+
+            if (KeyboardManager.IsKeyDown(Keys.LeftShift))
+                hSpeedMultiplier = 2.0f;
+
             if (KeyboardManager.IsKeyDown(Keys.S))
                 velocityChange -= myCamera.Normal * myMoveSpeed;
             if (KeyboardManager.IsKeyDown(Keys.W))
@@ -56,21 +61,22 @@ namespace Justice.Controls
             if (KeyboardManager.IsKeyDown(Keys.D))
                 velocityChange -= Vector3.Cross(myCamera.Up, myCamera.Normal) * myMoveSpeed;
 
+            velocityChange *= hSpeedMultiplier;
             velocityChange.Z = 0;
 
             if (KeyboardManager.IsKeyDown(Keys.Space) && myEntity.Position.Z < 0.1f)
-                velocityChange += Vector3.UnitZ * 3;
+                velocityChange += Vector3.UnitZ * 10;
 
             myEntity.Velocity += velocityChange;
 
             if (KeyboardManager.IsKeyDown(Keys.Left))
-                myCamera.RotateAxis(Vector3.UnitZ, myRotationSpeed);
+                myCamera.RotateAxis(Vector3.UnitZ, myRotationSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds);
             if (KeyboardManager.IsKeyDown(Keys.Right))
-                myCamera.RotateAxis(Vector3.UnitZ, -myRotationSpeed);
+                myCamera.RotateAxis(Vector3.UnitZ, -myRotationSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds);
             if (KeyboardManager.IsKeyDown(Keys.Up))
-                myCamera.RotateAxis(Vector3.Cross(myCamera.Up, myCamera.Normal), -myRotationSpeed);
+                myCamera.RotateAxis(Vector3.Cross(myCamera.Up, myCamera.Normal), -myRotationSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds);
             if (KeyboardManager.IsKeyDown(Keys.Down))
-                myCamera.RotateAxis(Vector3.Cross(myCamera.Up, myCamera.Normal), myRotationSpeed);
+                myCamera.RotateAxis(Vector3.Cross(myCamera.Up, myCamera.Normal), myRotationSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds);
 
             myCamera.Position = myEntity.Position + new Vector3(0, 0, 2);
         }

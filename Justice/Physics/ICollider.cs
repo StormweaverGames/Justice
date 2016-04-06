@@ -9,7 +9,9 @@ namespace Justice.Physics
 {
     public interface ICollider
     {
-        Vector3? Intersects(Ray value);
+        BoundingBox RoughBounds { get; }
+
+        float? Intersects(Ray value);
 
         bool Intersects(BoundingBox value);
 

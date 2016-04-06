@@ -74,12 +74,12 @@ namespace Justice.Gameplay
 
         public void Update(GameTime gameTime)
         {
+            Velocity += new Vector3(0, 0, (float)(-9.81 * gameTime.ElapsedGameTime.TotalSeconds));
             Position += (Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds);
 
             myVelocity.X *= 0.5f;
             myVelocity.Y *= 0.5f;
 
-            Velocity += new Vector3(0, 0, (float)(-9.81 * gameTime.ElapsedGameTime.TotalSeconds));
 
             if (Position.Z < 0)
                 Position = new Vector3(Position.X, Position.Y, 0);

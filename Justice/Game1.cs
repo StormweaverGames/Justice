@@ -1,4 +1,5 @@
-﻿using Justice.Controls;
+﻿using BEPUphysics.Entities.Prefabs;
+using Justice.Controls;
 using Justice.Gameplay;
 using Justice.Geometry;
 using Justice.Physics;
@@ -7,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace Justice
 {
@@ -22,9 +24,7 @@ namespace Justice
         ICamera myCamera;
         ParticleEngine myRain;
         Entity myPlayer;
-
-        GeometryMesh testMesh;
-
+        
         BasicEffect effect;
 
         SoundEffect rainSound;
@@ -50,9 +50,21 @@ namespace Justice
             //state.CullMode = CullMode.None;
             //GraphicsDevice.RasterizerState = state;
 
+            Window.AllowUserResizing = true;
+            Window.ClientSizeChanged += Window_ClientSizeChanged;
+
+            IsFixedTimeStep = false;
+
             KeyboardManager.ListenTo(Window);
 
             base.Initialize();
+        }
+
+        void Window_ClientSizeChanged(object sender, EventArgs e)
+        {
+            graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
+            graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
+            graphics.ApplyChanges();
         }
 
         /// <summary>
@@ -90,6 +102,7 @@ namespace Justice
 
             BasicEffect effect2 = effect.Clone() as BasicEffect;
             effect2.TextureEnabled = true;
+            effect2.LightingEnabled = false;
             effect2.Texture = Content.Load<Texture2D>("bloodSplat1");
 
             BasicEffect effect3 = effect.Clone() as BasicEffect;
@@ -191,14 +204,7 @@ namespace Justice
 
             GeometryMesh mesh = geometryBuilder.Bake(GraphicsDevice);
             mesh.Bounds = geometryBuilder.GetBounds(); ;
-
-            CityGenerator gen = new CityGenerator();
-            geometryBuilder.Clear();
-            gen.GenerateCity(geometryBuilder, 10, 10);
-            testMesh = geometryBuilder.Bake(GraphicsDevice);
-            //testMesh.Effect = effect;
-            testMesh.Bounds = geometryBuilder.GetBounds();
-
+            
             geometryBuilder.Clear();
             geometryBuilder.AddSkyBox();
             SkyBox skyBox = new SkyBox(geometryBuilder.Bake(GraphicsDevice), Content.Load<Texture2D>("skyBox"));
@@ -221,14 +227,9 @@ namespace Justice
             GeometryMesh fenceMesh = geometryBuilder.Bake(GraphicsDevice);
             fenceMesh.Bounds = geometryBuilder.GetBounds();
             Decal fences = new Decal(fenceMesh);
-
-            scene.AddRenderable(skyBox);
-            scene.AddRenderable(testMesh);
-            //scene.AddRenderable(mesh);
-            scene.AddRenderable(blood);
-            scene.AddRenderable(fences);
-
+            
             SimpleCamera camera = new SimpleCamera();
+            camera.FarPlane = 2000.0f;
             camera.Position = new Vector3(-10);
             camera.Normal = new Vector3(1, 1, 0.25f);
 
@@ -238,12 +239,29 @@ namespace Justice
             SimpleEntityController controller = new SimpleEntityController(myPlayer, camera);
             //SimpleCameraController controller = new SimpleCameraController(camera);
 
+            geometryBuilder.Clear();
+            geometryBuilder.AddCube(0, 0, 6, 10, 10, 6.5f);
+            geometryBuilder.DefaultEffect = effect;
+            GeometryMesh awning = geometryBuilder.Bake(GraphicsDevice);
+
+            Vector3 center = (awning.Bounds.Max + awning.Bounds.Min) / 2.0f;
+            scene.AddCollider(new Box(new BEPUutilities.Vector3(center.X, center.Y, center.Z), awning.Bounds.Max.X - awning.Bounds.Min.X, awning.Bounds.Max.Y - awning.Bounds.Min.Y, awning.Bounds.Max.Z - awning.Bounds.Min.Z));
+
             scene.AddUpdateable(controller);
             scene.AddUpdateable(myPlayer);
 
-            myRain = new ParticleEngine(GraphicsDevice, 2000);
+            myRain = new ParticleEngine(GraphicsDevice, scene, 500);
 
+            CityGenerator gen = new CityGenerator();
+            geometryBuilder.Clear();
+
+            scene.AddRenderable(skyBox);
             scene.AddRenderable(myRain);
+            scene.AddRenderable(awning);
+            gen.GenerateCity(scene, GraphicsDevice, effect, 10, 10);
+            //scene.AddRenderable(mesh);
+            scene.AddRenderable(blood);
+            scene.AddRenderable(fences);
 
             myScene = scene;
             myCamera = camera;
@@ -282,25 +300,7 @@ namespace Justice
                 Exit();
             
             myScene.Update(gameTime);
-
-            if (KeyboardManager.IsKeyPressed(Keys.Tab))
-            {
-                myScene.RemoveRenderable(testMesh);
-
-                GeometryBuilder<VertexPositionNormalTexture> geometryBuilder = new GeometryBuilder<VertexPositionNormalTexture>(PrimitiveType.TriangleList);
-                geometryBuilder.DefaultEffect = effect;
-
-                CityGenerator gen = new CityGenerator();
-                gen.GenerateCity(geometryBuilder, 10, 10);
-                testMesh = geometryBuilder.Bake(GraphicsDevice);
-                //testMesh.Effect = effect;
-                testMesh.Bounds = geometryBuilder.GetBounds();
-
-                testMesh.Init(GraphicsDevice);
-
-                myScene.AddRenderable(testMesh);
-            }
-
+            
             myRain.Update(gameTime);
             
             base.Update(gameTime);

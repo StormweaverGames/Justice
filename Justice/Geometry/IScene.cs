@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using Justice.Gameplay;
 
 using IUpdateable = Justice.Gameplay.IUpdateable;
+using Justice.Physics;
+using BEPUphysics;
 
 namespace Justice.Geometry
 {
@@ -23,6 +25,8 @@ namespace Justice.Geometry
         /// </summary>
         protected List<IRenderable> myRenderables;
 
+        protected Space myPhysicsSpace;
+
         /// <summary>
         /// Creates a new instance of the scene, this must be called by child classes
         /// </summary>
@@ -30,6 +34,9 @@ namespace Justice.Geometry
         {
             myRenderables = new List<IRenderable>();
             myUpdateables = new List<IUpdateable>();
+
+            myPhysicsSpace = new Space();
+            myPhysicsSpace.ForceUpdater.Gravity = new BEPUutilities.Vector3(0, 0, -9.81f);
         }
 
         /// <summary>
@@ -83,6 +90,11 @@ namespace Justice.Geometry
             return internalUseCollection.ToArray();
         }
 
+        public void AddCollider(ISpaceObject collider)
+        {
+            myPhysicsSpace.Add(collider);
+        }
+        
         /// <summary>
         /// Adds a renderable isntance to this scene
         /// </summary>
