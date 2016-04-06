@@ -136,5 +136,10 @@ namespace Justice.Geometry
                 if (myUpdateables[index].IsActive)
                     myUpdateables[index].Update(gameTime);
         }
+
+        internal void RemoveRenderable(IRenderable item)
+        {
+            myRenderables.Remove(item);
+        }
     }
 }

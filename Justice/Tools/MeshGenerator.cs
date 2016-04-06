@@ -122,6 +122,11 @@ namespace Justice.Tools
             builder.AddIndices(indices);
         }
 
+        public static void AddCube(this GeometryBuilder<VertexPositionNormalTexture> builder, float x1, float y1, float z1, float x2, float y2, float z2)
+        {
+            builder.AddCube(new Vector3(x1, y1, z1), new Vector3(x2, y2, z2));
+        }
+
         public static void AddCube(this GeometryBuilder<VertexPositionNormalTexture> builder, Vector3 min, Vector3 max)
         {
             VertexPositionNormalTexture[] verts = new VertexPositionNormalTexture[24];

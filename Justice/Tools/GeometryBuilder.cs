@@ -87,7 +87,7 @@ namespace Justice.Tools
             else
                 throw new InvalidOperationException("Cannot bake empty mesh");
         }
-
+        
         public BoundingBox GetBounds()
         {
             Vector3 min = new Vector3(float.MaxValue);
