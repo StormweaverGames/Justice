@@ -32,16 +32,16 @@ namespace Justice.Geometry
 
         private Vector3[] OFFSETS;
 
-        public BoundingBox Bounds
+        public override BoundingBox RenderBounds
         {
             get { return new BoundingBox(new Vector3(float.MinValue), new Vector3(float.MaxValue)); }
         }
 
-        public bool IsVisible
+        public override bool IsVisible
         {
             get { return true; }
         }
-
+        
         public ParticleEngine(GraphicsDevice graphics, IScene scene, int particleCount)
         {
             myScene = scene;
@@ -65,7 +65,7 @@ namespace Justice.Geometry
 
         }
 
-        Ray myRay;
+        //Ray myRay;
         public void Update(GameTime gameTime)
         {
             Matrix matrix = Matrix.CreateTranslation(myCamPos);
@@ -107,7 +107,7 @@ namespace Justice.Geometry
             myVertexBuffer.SetData(myVertices);
         }
 
-        public void Render(GraphicsDevice graphics, CameraMatrices matrices)
+        public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
             myCamPos = Matrix.Invert(matrices.View).Translation;
             myEffect.World = Matrix.CreateTranslation(myCamPos);
@@ -138,7 +138,7 @@ namespace Justice.Geometry
 
         }
 
-        public void Init(GraphicsDevice graphics)
+        public override void Init(GraphicsDevice graphics)
         {
             for(int index = 0; index < myParticles.Length; index ++)
             {
@@ -150,7 +150,7 @@ namespace Justice.Geometry
             }
         }
 
-        public bool ShouldRender(BoundingFrustum cameraFrustum)
+        public override bool ShouldRender(BoundingFrustum cameraFrustum)
         {
             return true;
         }

@@ -11,35 +11,53 @@ namespace Justice.Geometry
     /// <summary>
     /// Represents an instance that can be drawn
     /// </summary>
-    public interface IRenderable
+    public abstract class IRenderable
     {
         /// <summary>
         /// Gets the instance's bounding box, used for rough pass culling
         /// </summary>
-        BoundingBox Bounds { get; }
+        public abstract BoundingBox RenderBounds { get; }
         /// <summary>
-        /// Gets whether the instance is visible and should be rendered
+        /// Gets or sets whether the instance is visible and should be rendered
         /// </summary>
-        bool IsVisible { get; }
+        public virtual bool IsVisible { get; set; } = true;
+        /// <summary>
+        /// Gets whether this renderable is partially transparent
+        /// </summary>
+        public virtual bool IsTransparent { get; } = false;
+        
+        /// <summary>
+        /// Gets the texture for this renderable isntance
+        /// </summary>
+        public virtual Texture2D Texture { get { return null; } }
+
+        /// <summary>
+        /// Gets whether this renderable is a "pre-render" renderable, which will be rendered before all other renderables
+        /// </summary>
+        public virtual bool IsPreRendered { get; }
 
         /// <summary>
         /// Initializes this renderable instance
         /// </summary>
         /// <param name="graphics">The graphics device to use for intitialization</param>
-        void Init(GraphicsDevice graphics);
+        public abstract void Init(GraphicsDevice graphics);
 
         /// <summary>
         /// Gets whether this renderable should be rendered in the current draw call
         /// </summary>
         /// <param name="cameraFrustum">The camera frustum to check against</param>
         /// <returns>True if this instance should be rendered, false if otherwise</returns>
-        bool ShouldRender(BoundingFrustum cameraFrustum);
+        public virtual bool ShouldRender(BoundingFrustum cameraFrustum)
+        {
+            return cameraFrustum.Intersects(RenderBounds);
+        }
 
         /// <summary>
         /// Renders this renderable instance
         /// </summary>
         /// <param name="graphics">The graphics device to use for rendering</param>
         /// <param name="matrices">The camera's transformation matrices</param>
-        void Render(GraphicsDevice graphics, CameraMatrices matrices);
+        /// <param name="worldTransform">The world transformation to be applied to the renderable</param>
+        public abstract void Render(GraphicsDevice graphics, CameraMatrices matrices);
     }
 }

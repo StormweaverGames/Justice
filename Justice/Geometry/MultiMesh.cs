@@ -13,20 +13,15 @@ namespace Justice.Geometry
         private IRenderable[] myRenderables;
         private BoundingBox myBounds;
 
-        public BoundingBox Bounds
+        public override BoundingBox RenderBounds
         {
             get { return myBounds; }
         }
-
-        public bool IsVisible
-        {
-            get;
-            set;
-        }
-
+        
         public MultiMesh()
         {
             myRenderables = new IRenderable[0];
+            IsVisible = true;
         }
 
         public void Add(IRenderable renderable)
@@ -34,23 +29,23 @@ namespace Justice.Geometry
             Array.Resize(ref myRenderables, myRenderables.Length + 1);
             myRenderables[myRenderables.Length - 1] = renderable;
 
-            myBounds.Min = Vector3.Min(renderable.Bounds.Min, myBounds.Min);
-            myBounds.Max = Vector3.Max(renderable.Bounds.Max, myBounds.Max);
+            myBounds.Min = Vector3.Min(renderable.RenderBounds.Min, myBounds.Min);
+            myBounds.Max = Vector3.Max(renderable.RenderBounds.Max, myBounds.Max);
         }
 
-        public void Init(GraphicsDevice graphics)
+        public override void Init(GraphicsDevice graphics)
         {
             for (int index = 0; index < myRenderables.Length; index++)
                 myRenderables[index].Init(graphics);
         }
 
-        public void Render(GraphicsDevice graphics, CameraMatrices matrices)
+        public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
             for (int index = 0; index < myRenderables.Length; index++)
                 myRenderables[index].Render(graphics, matrices);
         }
 
-        public bool ShouldRender(BoundingFrustum cameraFrustum)
+        public override bool ShouldRender(BoundingFrustum cameraFrustum)
         {
             return true;
         }

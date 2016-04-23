@@ -34,6 +34,7 @@ namespace Justice.Controls
             myCamera = camera;
 
             IsActive = true;
+            
 
             myRotationSpeed = DEFAULT_ROTATION_SPEED;
             myMoveSpeed = DEFUALT_MOVE_SPEED;

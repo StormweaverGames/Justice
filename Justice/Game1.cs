@@ -1,8 +1,10 @@
-﻿using BEPUphysics.Entities.Prefabs;
+﻿using BEPUphysics.Constraints.SingleEntity;
+using BEPUphysics.Entities.Prefabs;
+using BEPUphysics.Paths;
+using BEPUphysics.Paths.PathFollowing;
 using Justice.Controls;
 using Justice.Gameplay;
 using Justice.Geometry;
-using Justice.Physics;
 using Justice.Tools;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -19,16 +21,19 @@ namespace Justice
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        SpriteFont myDebugFont;
 
         IScene myScene;
         ICamera myCamera;
         ParticleEngine myRain;
-        Entity myPlayer;
+        Player myPlayer;
         
         BasicEffect effect;
 
         SoundEffect rainSound;
         SoundEffectInstance myRainSoundInstance;
+
+        bool isRayIntersecting;
          
         public Game1()
         {
@@ -76,12 +81,16 @@ namespace Justice
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            myDebugFont = Content.Load<SpriteFont>("debug_font");
+
             rainSound = Content.Load<SoundEffect>("rain_bg_mike_koenig");
             myRainSoundInstance = rainSound.CreateInstance();
-            myRainSoundInstance.Volume = 0.5f;
+            myRainSoundInstance.Volume = 0.05f;
             myRainSoundInstance.IsLooped = true;
             
             BuildScene();
+
+            // myRainSoundInstance.Play();
         }
 
         private void BuildScene()
@@ -99,6 +108,8 @@ namespace Justice
             effect.DirectionalLight0.SpecularColor = new Vector3(0.7f, 0.95f, 0.9f) * 0.15f;
             effect.SpecularPower = 0.12f;
             effect.AmbientLightColor = new Vector3(0.15f);
+            effect.TextureEnabled = true;
+            effect.Texture = Content.Load<Texture2D>("concrete");
 
             BasicEffect effect2 = effect.Clone() as BasicEffect;
             effect2.TextureEnabled = true;
@@ -203,7 +214,6 @@ namespace Justice
             geometryBuilder.AddCube(new Vector3(170, -110, 0), new Vector3(245, -135, 60));
 
             GeometryMesh mesh = geometryBuilder.Bake(GraphicsDevice);
-            mesh.Bounds = geometryBuilder.GetBounds(); ;
             
             geometryBuilder.Clear();
             geometryBuilder.AddSkyBox();
@@ -217,7 +227,6 @@ namespace Justice
             geometryBuilder.AddCube(new Vector3(-9.99f, 45f, 1.8f), new Vector3(-10.2f, 46f, 2.5f));
             geometryBuilder.DefaultEffect = effect2;
             GeometryMesh bloodMesh = geometryBuilder.Bake(GraphicsDevice);
-            bloodMesh.Bounds = geometryBuilder.GetBounds();
             Decal blood = new Decal(bloodMesh);
 
             geometryBuilder.Clear();
@@ -225,27 +234,48 @@ namespace Justice
             geometryBuilder.AddCube(new Vector3(-5, 20, 0), new Vector3(0, 20, 3.2f));
             geometryBuilder.AddCube(new Vector3(-5.25f, 19.85f, 0), new Vector3(-5.0f, 20.05f, 3.2f));
             GeometryMesh fenceMesh = geometryBuilder.Bake(GraphicsDevice);
-            fenceMesh.Bounds = geometryBuilder.GetBounds();
             Decal fences = new Decal(fenceMesh);
-            
+
+            geometryBuilder.Clear();
+
+            geometryBuilder.DefaultEffect = effect;
+            geometryBuilder.AddCube(-10, -10, -0.25f, 10, 10, 0.25f);
+            GeometryMesh lift = geometryBuilder.Bake(GraphicsDevice);
+
+            SimplePhysicsEntity liftEntity = new SimplePhysicsEntity(lift.RenderBounds.GeneratePhysicsBox(), 0, lift);
+            liftEntity.Position = new Vector3(0, 20, 15);
+
+            CardinalSpline3D elevatorPath = new CardinalSpline3D();
+            elevatorPath.PreLoop = CurveEndpointBehavior.Mirror;
+            elevatorPath.PostLoop = CurveEndpointBehavior.Mirror;
+            elevatorPath.ControlPoints.Add(-1, new BEPUutilities.Vector3(0, 20, 0));
+            elevatorPath.ControlPoints.Add(0, new BEPUutilities.Vector3(0, 20, 0));
+            elevatorPath.ControlPoints.Add(2, new BEPUutilities.Vector3(0, 20, 0));
+            elevatorPath.ControlPoints.Add(8, new BEPUutilities.Vector3(0, 20, 80));
+            elevatorPath.ControlPoints.Add(10, new BEPUutilities.Vector3(0, 20, 80));
+
+            EntityPather pather = new EntityPather(liftEntity);
+            pather.SetPositionPath(elevatorPath);
+            scene.Add(pather);
+
             SimpleCamera camera = new SimpleCamera();
             camera.FarPlane = 2000.0f;
             camera.Position = new Vector3(-10);
             camera.Normal = new Vector3(1, 1, 0.25f);
 
-            myPlayer = new Entity(null);
-            myPlayer.Position = new Vector3(0, 0, 1);
+            myPlayer = new Player(new Vector3(-5, -5, 10));
+            myPlayer.AddToScene(scene.PhysicsSpace);
 
-            SimpleEntityController controller = new SimpleEntityController(myPlayer, camera);
+            SimplePlayerController controller = new SimplePlayerController(myPlayer, camera);
             //SimpleCameraController controller = new SimpleCameraController(camera);
-
+            
             geometryBuilder.Clear();
             geometryBuilder.AddCube(0, 0, 6, 10, 10, 6.5f);
             geometryBuilder.DefaultEffect = effect;
             GeometryMesh awning = geometryBuilder.Bake(GraphicsDevice);
 
-            Vector3 center = (awning.Bounds.Max + awning.Bounds.Min) / 2.0f;
-            scene.AddCollider(new Box(new BEPUutilities.Vector3(center.X, center.Y, center.Z), awning.Bounds.Max.X - awning.Bounds.Min.X, awning.Bounds.Max.Y - awning.Bounds.Min.Y, awning.Bounds.Max.Z - awning.Bounds.Min.Z));
+            Vector3 center = (awning.RenderBounds.Max + awning.RenderBounds.Min) / 2.0f;
+            scene.AddCollider(new Box(new BEPUutilities.Vector3(center.X, center.Y, center.Z), awning.RenderBounds.Max.X - awning.RenderBounds.Min.X, awning.RenderBounds.Max.Y - awning.RenderBounds.Min.Y, awning.RenderBounds.Max.Z - awning.RenderBounds.Min.Z));
 
             scene.AddUpdateable(controller);
             scene.AddUpdateable(myPlayer);
@@ -258,6 +288,7 @@ namespace Justice
             scene.AddRenderable(skyBox);
             scene.AddRenderable(myRain);
             scene.AddRenderable(awning);
+            scene.Add(liftEntity);
             gen.GenerateCity(scene, GraphicsDevice, effect, 10, 10);
             //scene.AddRenderable(mesh);
             scene.AddRenderable(blood);
@@ -267,15 +298,6 @@ namespace Justice
             myCamera = camera;
 
             myScene.IterateRenderables(X => X.Init(GraphicsDevice));
-
-            BoundingBox box = new BoundingBox(new Vector3(0, 0, 0), new Vector3(10, 10, 10));
-            OrientedBoundingBox box2 = new OrientedBoundingBox(new Vector3(15, 15, 15), new Vector3(25, 25, 25));
-            box2.Transforms = Matrix.CreateTranslation(-7, -7, -7);
-
-            System.Diagnostics.Debug.Write(box2.Intersects(box) ? "Intersests" : "Does not interesect");
-
-
-            myRainSoundInstance.Play();
         }
 
         /// <summary>
@@ -316,6 +338,19 @@ namespace Justice
             
             myScene.Render(GraphicsDevice, myCamera);
 
+            isRayIntersecting = myPlayer.RayCast(3.0f);
+            
+            spriteBatch.Begin();
+            spriteBatch.DrawString(myDebugFont, "POS: " + (myCamera as SimpleCamera).Position, Vector2.Zero, Color.White);
+            spriteBatch.DrawString(myDebugFont, "DIR: " + (myCamera as SimpleCamera).Normal, new Vector2(0, 15), Color.White);
+
+            if (isRayIntersecting)
+            {
+                spriteBatch.DrawString(myDebugFont, "Intersecting", new Vector2(0, 30), Color.Red);
+            }
+
+            spriteBatch.End();
+           
             base.Draw(gameTime);
         }
     }

@@ -82,7 +82,7 @@ namespace Justice.Tools
                 }
 
                 GeometryMesh result = new GeometryMesh(meshEffect, vBuffer, iBuffer, myPrimitiveType);
-                result.Bounds = GetBounds();
+                result.SetBounds(GetBounds());
                 return result;
             }
             else

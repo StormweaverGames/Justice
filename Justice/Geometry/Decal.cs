@@ -12,36 +12,50 @@ namespace Justice.Geometry
     {
         IRenderable myRenderable;
 
-        public BoundingBox Bounds
+        public override BoundingBox RenderBounds
         {
-            get { return myRenderable.Bounds; }
+            get { return myRenderable.RenderBounds; }
         }
 
-        public bool IsVisible
+        public override bool IsTransparent
+        {
+            get { return true; }
+        }
+
+        public override Texture2D Texture
+        {
+            get
+            {
+                return myRenderable.Texture;
+            }
+        }
+
+        public override bool IsVisible
         {
             get { return myRenderable.IsVisible; }
+            set { myRenderable.IsVisible = value; }
         }
 
         public SamplerState Sampler { get; internal set; }
-
+        
         public Decal(IRenderable renderable)
         {
             myRenderable = renderable;
         }
 
-        public void Init(GraphicsDevice graphics)
+        public override void Init(GraphicsDevice graphics)
         {
             myRenderable.Init(graphics);
         }
 
-        public void Render(GraphicsDevice graphics, CameraMatrices matrices)
+        public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
             graphics.BlendState = BlendState.AlphaBlend;
             myRenderable.Render(graphics, matrices);
             graphics.BlendState = BlendState.Opaque;
         }
 
-        public bool ShouldRender(BoundingFrustum cameraFrustum)
+        public override bool ShouldRender(BoundingFrustum cameraFrustum)
         {
             return myRenderable.ShouldRender(cameraFrustum);
         }

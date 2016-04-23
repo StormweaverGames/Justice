@@ -8,41 +8,60 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Justice.Geometry
 {
-    public class GeometryMesh : IRenderable
+    public class GeometryMesh : IRenderable, ITransformable
     {
         VertexBuffer myVertices;
         IndexBuffer myIndices;
         PrimitiveType myPrimitiveType;
         int myPrimitiveCount;
         Effect myEffect;
+        Matrix myTransform;
+        BoundingBox myBounds;
+        BoundingBox myRenderBounds;
 
         /// <summary>
         /// Gets or sets the bounds for this geometry
         /// </summary>
-        public BoundingBox Bounds
+        public override BoundingBox RenderBounds
         {
-            get;
-            set;
+            get { return myRenderBounds; }
         }
-        /// <summary>
-        /// Gets or sets whether this geometry is visible
-        /// </summary>
-        public bool IsVisible
+
+        public override Texture2D Texture
         {
-            get;
-            set;
+            get
+            {
+                return (myEffect as BasicEffect).Texture;
+            }
         }
+
         public Effect Effect
         {
             get { return myEffect; }
             set { myEffect = value; }
         }
+        public Matrix Transformation
+        {
+            get { return myTransform; }
+            set
+            {
+                myTransform = value;
 
+                Vector3 min = Vector3.Transform(myBounds.Min, value);
+                Vector3 max = Vector3.Transform(myBounds.Max, value);
+
+                myRenderBounds.Min = Vector3.Min(min, max);
+                myRenderBounds.Max = Vector3.Max(min, max);
+            }
+        }
+        
         public GeometryMesh(Effect effect, VertexBuffer vertices, PrimitiveType primitiveType)
         {
             myEffect = effect;
             myVertices = vertices;
             myPrimitiveType = primitiveType;
+            myTransform = Matrix.Identity;
+            IsVisible = true;
         }
 
         public GeometryMesh(Effect effect,VertexBuffer vertices, IndexBuffer indices, PrimitiveType primitiveType)
@@ -51,9 +70,17 @@ namespace Justice.Geometry
             myVertices = vertices;
             myIndices = indices;
             myPrimitiveType = primitiveType;
+            myTransform = Matrix.Identity;
+            IsVisible = true;
         }
 
-        public void Init(GraphicsDevice graphics)
+        public void SetBounds(BoundingBox bounds)
+        {
+            myBounds = bounds;
+            Transformation = myTransform;
+        }
+
+        public override void Init(GraphicsDevice graphics)
         {
             switch(myPrimitiveType)
             {
@@ -72,19 +99,21 @@ namespace Justice.Geometry
             }
         }
 
-        public void Render(GraphicsDevice graphics, CameraMatrices matrices)
+        public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
             (myEffect as BasicEffect).View = matrices.View;
             (myEffect as BasicEffect).Projection = matrices.Projection;
+            (myEffect as BasicEffect).World = myTransform;
+
+            graphics.SetVertexBuffer(myVertices);
+            graphics.Indices = myIndices;
 
             for (int passIndex = 0; passIndex < myEffect.CurrentTechnique.Passes.Count; passIndex++)
             {
                 myEffect.CurrentTechnique.Passes[passIndex].Apply();
-                graphics.SetVertexBuffer(myVertices);
 
                 if (myIndices != null)
                 {
-                    graphics.Indices = myIndices;
                     graphics.DrawIndexedPrimitives(myPrimitiveType, 0, 0, myPrimitiveCount);
                 }
                 else
@@ -94,9 +123,9 @@ namespace Justice.Geometry
             }
         }
 
-        public bool ShouldRender(BoundingFrustum cameraFrustum)
+        public override bool ShouldRender(BoundingFrustum cameraFrustum)
         {
-            return true;
+            return true; //cameraFrustum.Intersects(myBounds);
         }
     }
 }

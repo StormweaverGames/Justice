@@ -11,12 +11,13 @@ namespace Justice.Geometry
     /// <summary>
     /// Represents a single instance of a renderable model
     /// </summary>
-    public class ModelInstance : IRenderable
+    public class ModelInstance : IRenderable, ITransformable
     {
         protected Model myModel;
         protected Matrix[] myBoneTransformations;
         protected BoundingBox myBounds;
         protected Matrix myWorldTransform;
+        protected Texture2D myTexture;
         
         /// <summary>
         /// Gets or sets the transformation matrix for this model instance
@@ -33,17 +34,17 @@ namespace Justice.Geometry
         /// <summary>
         /// Gets this model instance's bounds
         /// </summary>
-        public BoundingBox Bounds
+        public override BoundingBox RenderBounds
         {
             get { return myBounds; }
         }
-        /// <summary>
-        /// Gets or sets whether this model isntance is visible
-        /// </summary>
-        public bool IsVisible
+
+        public override Texture2D Texture
         {
-            get;
-            set;
+            get
+            {
+                return myTexture;
+            }
         }
 
         /// <summary>
@@ -58,6 +59,11 @@ namespace Justice.Geometry
 
             myBounds = new BoundingBox();
             UpdateBoundingBox();
+        }
+
+        public void SetTexture(Texture2D texture)
+        {
+            myTexture = texture;
         }
 
         /// <summary>
@@ -103,7 +109,7 @@ namespace Justice.Geometry
         /// Initializes this model instance
         /// </summary>
         /// <param name="graphics">The graphics device to initialize with</param>
-        public void Init(GraphicsDevice graphics)
+        public override void Init(GraphicsDevice graphics)
         {
         }
 
@@ -112,7 +118,7 @@ namespace Justice.Geometry
         /// </summary>
         /// <param name="graphics"></param>
         /// <param name="matrices"></param>
-        public void Render(GraphicsDevice graphics, CameraMatrices matrices)
+        public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
             myModel.CopyBoneTransformsFrom(myBoneTransformations);
             myModel.Draw(myWorldTransform, matrices.View, matrices.Projection);
@@ -123,9 +129,9 @@ namespace Justice.Geometry
         /// </summary>
         /// <param name="cameraFrustum">The camera frustum for culling</param>
         /// <returns>True. Always.</returns>
-        public bool ShouldRender(BoundingFrustum cameraFrustum)
+        public override bool ShouldRender(BoundingFrustum cameraFrustum)
         {
-            return true;
+            return cameraFrustum.Intersects(myBounds);
         }
     }
 }

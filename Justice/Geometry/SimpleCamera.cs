@@ -30,6 +30,8 @@ namespace Justice.Geometry
         protected Vector3 myNormal;
         protected Vector3 myUp;
 
+        protected Ray myRay;
+
         public CameraMatrices Matrices
         {
             get { return myMatrices; }
@@ -66,6 +68,11 @@ namespace Justice.Geometry
             set { myFarField = value; }
         }
 
+        public Ray ViewRay
+        {
+            get { return myRay; }
+        }
+
         public SimpleCamera()
             : this(DEFAULT_POSTION, DEFAULT_NORMAL, DEFAULT_UP, DEFAULT_FOV, DEFAULT_ASPECT_RATIO, DEFAULT_NEAR_FIELD, DEFAULT_FAR_FIELD)
         {
@@ -88,6 +95,8 @@ namespace Justice.Geometry
             myNormal = normal;
             myUp = up;
 
+            myRay = new Ray(position, normal);
+
             CalculateProjectionatrix();
             CalculateViewMatrix();
         }
@@ -107,6 +116,8 @@ namespace Justice.Geometry
         protected void CalculateViewMatrix()
         {
             myMatrices.View = Matrix.CreateLookAt(myPosition, myPosition + myNormal, myUp);
+            myRay.Position = Position;
+            myRay.Direction = Normal;
         }
 
         public void InitFrame()

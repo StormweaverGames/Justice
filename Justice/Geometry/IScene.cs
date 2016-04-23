@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Justice.Gameplay;
 
 using IUpdateable = Justice.Gameplay.IUpdateable;
-using Justice.Physics;
 using BEPUphysics;
 
 namespace Justice.Geometry
@@ -16,6 +15,30 @@ namespace Justice.Geometry
     /// </summary>
     public abstract class IScene
     {
+        private class NullTextureBinder : IRenderable
+        {
+            public override bool IsPreRendered
+            {
+                get { return true; }
+            }
+
+            private static readonly BoundingBox BOUNDS = new BoundingBox();
+            public override BoundingBox RenderBounds
+            {
+                get { return BOUNDS; }
+            }
+
+            public override void Init(GraphicsDevice graphics)
+            {
+            }
+
+            public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
+            {
+                graphics.Textures[0] = null;
+            }
+        }
+
+
         /// <summary>
         /// Stores the list of human input controlers in this scene
         /// </summary>
@@ -28,6 +51,14 @@ namespace Justice.Geometry
         protected Space myPhysicsSpace;
 
         /// <summary>
+        /// Gets this scene's physics space
+        /// </summary>
+        public Space PhysicsSpace
+        {
+            get { return myPhysicsSpace; }
+        }
+
+        /// <summary>
         /// Creates a new instance of the scene, this must be called by child classes
         /// </summary>
         protected IScene()
@@ -37,6 +68,8 @@ namespace Justice.Geometry
 
             myPhysicsSpace = new Space();
             myPhysicsSpace.ForceUpdater.Gravity = new BEPUutilities.Vector3(0, 0, -9.81f);
+
+            myRenderables.Add(new NullTextureBinder());
         }
 
         /// <summary>
@@ -80,7 +113,7 @@ namespace Justice.Geometry
             for (int index = 0; index < myRenderables.Count; index++)
             {
                 // Check first for null, then perform a rough pass filter, then fine pass
-                if (myRenderables[index] != null && cameraFrustum.Intersects(myRenderables[index].Bounds) && myRenderables[index].ShouldRender(cameraFrustum))
+                if (myRenderables[index] != null && cameraFrustum.Intersects(myRenderables[index].RenderBounds) && myRenderables[index].ShouldRender(cameraFrustum))
                 {
                     internalUseCollection.Add(myRenderables[index]);
                 }
@@ -90,9 +123,71 @@ namespace Justice.Geometry
             return internalUseCollection.ToArray();
         }
 
+        public void Add(PhysicsEntity entity)
+        {
+            entity.AddToScene(myPhysicsSpace);
+            myUpdateables.Add(entity);
+            myRenderables.Add(entity);
+        }
+
+        public void Add(Entity entity)
+        {
+            myUpdateables.Add(entity);
+            myRenderables.Add(entity);
+        }
+
+
+        public void Add(EntityPather pather)
+        {
+            pather.AddToScene(myPhysicsSpace);
+            myUpdateables.Add(pather);
+        }
+
         public void AddCollider(ISpaceObject collider)
         {
             myPhysicsSpace.Add(collider);
+        }
+
+        BEPUutilities.Ray __myIntersectRay;
+        /// <summary>
+        /// Gets whether a ray intersects this scene's physics space
+        /// </summary>
+        /// <param name="rayCast">The ray to raycast against</param>
+        /// <returns>True if the ray intersects the scene, false if otherwise</returns>
+        public bool Intersects(Ray rayCast)
+        {
+            __myIntersectRay.Position.X = rayCast.Position.X;
+            __myIntersectRay.Position.Y = rayCast.Position.Y;
+            __myIntersectRay.Position.Z = rayCast.Position.Z;
+
+            __myIntersectRay.Direction.X = rayCast.Direction.X;
+            __myIntersectRay.Direction.Y = rayCast.Direction.Y;
+            __myIntersectRay.Direction.Z = rayCast.Direction.Z;
+
+            RayCastResult result;
+
+            return myPhysicsSpace.RayCast(__myIntersectRay, out result);
+        }
+
+        /// <summary>
+        /// Gets whether a ray intersects this scene's physics space
+        /// </summary>
+        /// <param name="rayCast">The ray to raycast against</param>
+        /// <param name="maxLength">The maximum length of the array</param>
+        /// <returns>True if the ray intersects the scene, false if otherwise</returns>
+        public bool Intersects(Ray rayCast, float maxLength)
+        {
+            __myIntersectRay.Position.X = rayCast.Position.X;
+            __myIntersectRay.Position.Y = rayCast.Position.Y;
+            __myIntersectRay.Position.Z = rayCast.Position.Z;
+
+            __myIntersectRay.Direction.X = rayCast.Direction.X;
+            __myIntersectRay.Direction.Y = rayCast.Direction.Y;
+            __myIntersectRay.Direction.Z = rayCast.Direction.Z;
+
+            RayCastResult result;
+
+            return myPhysicsSpace.RayCast(__myIntersectRay, maxLength, out result);
         }
         
         /// <summary>
@@ -101,7 +196,54 @@ namespace Justice.Geometry
         /// <param name="renderable">The isntance to add to the scene</param>
         public void AddRenderable(IRenderable renderable)
         {
-            myRenderables.Add(renderable);
+            int pos = __getRenderableInsert(renderable);
+            myRenderables.Insert(pos, renderable);
+        }
+        
+        private static IRenderable __getRenderableInsertCached;
+        protected int __getRenderableInsert(IRenderable renderable, int start = 0, int end = -1)
+        {
+            if (renderable.IsPreRendered)
+                return 1;
+
+            if (renderable.IsTransparent)
+                return myRenderables.Count;
+
+            if (renderable.Texture == null)
+            {
+                int pos = myRenderables.FindIndex(1, x => !x.IsPreRendered);
+                return pos == -1 ? myRenderables.Count : pos;
+            }
+            else
+            {
+                start = myRenderables.FindIndex(start + 1, x => x.Texture != null);
+
+                if (start == -1)
+                    return myRenderables.Count;
+            }
+
+            end = end == -1 ? myRenderables.Count - 1 : end;
+
+            int mid = (start + end) / 2;
+
+            if (mid == start)
+                return mid + 1;
+
+            __getRenderableInsertCached = myRenderables[mid];
+
+            if (__getRenderableInsertCached.Texture == null)
+                return __getRenderableInsert(renderable, mid, end);
+            else
+            {
+                int comparison = __getRenderableInsertCached.Texture.GetHashCode().CompareTo(renderable.GetHashCode());
+
+                if (comparison == 0)
+                    return mid;
+                else if (comparison < 0)
+                    return __getRenderableInsert(renderable, start, mid);
+                else
+                    return __getRenderableInsert(renderable, mid, end);
+            }
         }
 
         /// <summary>
@@ -130,7 +272,7 @@ namespace Justice.Geometry
             for (int index = 0; index < myRenderables.Count; index++)
             {
                 // Check first for null, then perform a rough pass filter, then fine pass
-                if (myRenderables[index] != null && cameraFrustum.Intersects(myRenderables[index].Bounds) && myRenderables[index].ShouldRender(cameraFrustum))
+                if (myRenderables[index] != null && myRenderables[index].IsVisible && myRenderables[index].ShouldRender(cameraFrustum))
                 {
                     // If the item should be rendered, draw that bitch
                     myRenderables[index].Render(graphics, camera.Matrices);
@@ -144,6 +286,8 @@ namespace Justice.Geometry
         /// <param name="gameTime">The current timing snapshot</param>
         public void Update(GameTime gameTime)
         {
+            myPhysicsSpace.Update();
+
             for (int index = 0; index < myUpdateables.Count; index++)
                 if (myUpdateables[index].IsActive)
                     myUpdateables[index].Update(gameTime);

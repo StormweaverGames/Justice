@@ -6,83 +6,70 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Justice.Tools;
 
 namespace Justice.Gameplay
 {
-    public class Entity : IRenderable, ITrackable, IUpdateable
+    public abstract class Entity : IRenderable, ITrackable, IUpdateable
     {
         protected IRenderable myRenderable;
-        protected Vector3 myVelocity;
-
-        public BoundingBox Bounds
+        
+        public override BoundingBox RenderBounds
         {
-            get { return myRenderable.Bounds; }
+            get
+            {
+                return myRenderable.RenderBounds;
+            }
         }
 
-        public bool IsVisible
+        public override Texture2D Texture
         {
-            get { return myRenderable.IsVisible; }
+            get { return myRenderable == null ? null : myRenderable.Texture; }
         }
 
-        public Vector3 Position
+        public override bool IsVisible
         {
-            get;
-            set;
+            get { return myRenderable != null && myRenderable.IsVisible; }
         }
 
-        public Vector3 Velocity
-        {
-            get { return myVelocity; }
-            set { myVelocity = value; }
-        }
-        public float Mass
+        public abstract Vector3 Position
         {
             get;
             set;
         }
-
+        
         public bool IsActive
         {
             get;
             set;
         }
+        
+        protected Entity()
+        {
+            myRenderable = null;
+        }
 
-        public Entity(IRenderable renderer)
+        protected Entity(IRenderable renderer)
         {
             myRenderable = renderer;
             IsActive = true;
-
-            Mass = 5.0f;
         }
 
-        public void Init(GraphicsDevice graphics)
+        public override void Init(GraphicsDevice graphics)
         {
-            if (myRenderable != null)
-                myRenderable.Init(graphics);
+            myRenderable?.Init(graphics);
         }
 
-        public void Render(GraphicsDevice graphics, CameraMatrices matrices)
+        public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
-            if (myRenderable != null)
-                myRenderable.Render(graphics, matrices);
+            myRenderable?.Render(graphics, matrices);
         }
 
-        public bool ShouldRender(BoundingFrustum cameraFrustum)
+        public override bool ShouldRender(BoundingFrustum cameraFrustum)
         {
             return myRenderable != null ? myRenderable.ShouldRender(cameraFrustum) : false;
         }
 
-        public void Update(GameTime gameTime)
-        {
-            Velocity += new Vector3(0, 0, (float)(-9.81 * gameTime.ElapsedGameTime.TotalSeconds));
-            Position += (Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds);
-
-            myVelocity.X *= 0.5f;
-            myVelocity.Y *= 0.5f;
-
-
-            if (Position.Z < 0)
-                Position = new Vector3(Position.X, Position.Y, 0);
-        }
+        public abstract void Update(GameTime gameTime);
     }
 }

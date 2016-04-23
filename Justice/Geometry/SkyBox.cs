@@ -10,6 +10,8 @@ namespace Justice.Geometry
 {
     public class SkyBox : IRenderable
     {
+        private static readonly BoundingBox DEFAULT_BOUNDS = new BoundingBox(new Vector3(float.MinValue), new Vector3(float.MaxValue));
+
         SamplerState mySamplerState;
         DepthStencilState myDepthDisabledState;
         DepthStencilState myDefaultDepthState;
@@ -18,17 +20,22 @@ namespace Justice.Geometry
         private Texture2D myTexture;
         private GeometryMesh myMesh;
 
-        public BoundingBox Bounds
+        public override BoundingBox RenderBounds
         {
-            get { return new BoundingBox(new Vector3(float.MinValue), new Vector3(float.MaxValue)); }
+            get { return DEFAULT_BOUNDS; }
         }
 
-        public bool IsVisible
+        public override bool IsVisible
         {
             get { return true; }
         }
-        
-        public Texture2D Texture
+
+        public override bool IsPreRendered
+        {
+            get { return true; }
+        }
+
+        new public Texture2D Texture
         {
             get { return myTexture; }
             set
@@ -49,14 +56,14 @@ namespace Justice.Geometry
                 myMesh.Effect = myEffect;
             }
         }
-
+        
         public SkyBox(GeometryMesh mesh, Texture2D texture)
         {
             myMesh = mesh;
             myTexture = texture;
         }
 
-        public void Init(GraphicsDevice graphics)
+        public override void Init(GraphicsDevice graphics)
         {
             mySamplerState = new SamplerState();
             mySamplerState.AddressU = TextureAddressMode.Clamp;
@@ -79,18 +86,19 @@ namespace Justice.Geometry
             }
         }
 
-        public void Render(GraphicsDevice graphics, CameraMatrices matrices)
+        public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
             graphics.SamplerStates[0] = mySamplerState;            
             graphics.DepthStencilState = myDepthDisabledState;
 
-            (myMesh.Effect as BasicEffect).World = Matrix.CreateTranslation(Matrix.Invert(matrices.View).Translation);
+            myMesh.Transformation = Matrix.CreateTranslation(Matrix.Invert(matrices.View).Translation);
             myMesh.Render(graphics, matrices);
 
             graphics.DepthStencilState = myDefaultDepthState;
+            graphics.BlendState = BlendState.Opaque;
         }
 
-        public bool ShouldRender(BoundingFrustum cameraFrustum)
+        public override bool ShouldRender(BoundingFrustum cameraFrustum)
         {
             return true;
         }
