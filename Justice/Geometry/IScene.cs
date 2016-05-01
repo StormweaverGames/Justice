@@ -286,7 +286,7 @@ namespace Justice.Geometry
         /// <param name="gameTime">The current timing snapshot</param>
         public void Update(GameTime gameTime)
         {
-            myPhysicsSpace.Update();
+            myPhysicsSpace.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             for (int index = 0; index < myUpdateables.Count; index++)
                 if (myUpdateables[index].IsActive)

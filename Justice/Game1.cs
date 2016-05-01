@@ -5,12 +5,15 @@ using BEPUphysics.Paths.PathFollowing;
 using Justice.Controls;
 using Justice.Gameplay;
 using Justice.Geometry;
+using Justice.SpaceGame;
 using Justice.Tools;
+using Justice.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.IO;
 
 namespace Justice
 {
@@ -32,6 +35,8 @@ namespace Justice
 
         SoundEffect rainSound;
         SoundEffectInstance myRainSoundInstance;
+
+        FrameRateMonitor myFpsMonitor;
 
         bool isRayIntersecting;
          
@@ -55,12 +60,22 @@ namespace Justice
             //state.CullMode = CullMode.None;
             //GraphicsDevice.RasterizerState = state;
 
+            graphics.SynchronizeWithVerticalRetrace = false;
+
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += Window_ClientSizeChanged;
 
             IsFixedTimeStep = false;
 
             KeyboardManager.ListenTo(Window);
+
+            Window.ClientSizeChanged += (X, Y) => 
+            {
+                graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
+                graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
+                graphics.ApplyChanges();
+                myFpsMonitor.OnViewportResized(Window.ClientBounds);
+            };
 
             base.Initialize();
         }
@@ -87,6 +102,10 @@ namespace Justice
             myRainSoundInstance = rainSound.CreateInstance();
             myRainSoundInstance.Volume = 0.05f;
             myRainSoundInstance.IsLooped = true;
+
+            myFpsMonitor = new FrameRateMonitor(new Rectangle(0, 45, 120, 120), 0, 60, true);
+            myFpsMonitor.Init(GraphicsDevice);
+            myFpsMonitor.SampleRate = 30;
             
             BuildScene();
 
@@ -297,6 +316,14 @@ namespace Justice
             myScene = scene;
             myCamera = camera;
 
+            Ship ship = new Ship();
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(10, 10, 10));
+            ship.BakeShape(1.0f);
+
+            BinaryWriter writer = new BinaryWriter(File.OpenWrite("test.sgl"));
+            ship.Save(writer);
+            writer.Close();
+
             myScene.IterateRenderables(X => X.Init(GraphicsDevice));
         }
 
@@ -340,7 +367,15 @@ namespace Justice
 
             isRayIntersecting = myPlayer.RayCast(3.0f);
             
+            myFpsMonitor.Update(gameTime);
+            myFpsMonitor.Render(GraphicsDevice);
+
             spriteBatch.Begin();
+
+            spriteBatch.DrawString(myDebugFont, myFpsMonitor.Max.ToString("0.00"), new Vector2(myFpsMonitor.Bounds.Right, myFpsMonitor.Bounds.Top), Color.White);
+            spriteBatch.DrawString(myDebugFont, myFpsMonitor.Min.ToString("0.00"), new Vector2(myFpsMonitor.Bounds.Right, myFpsMonitor.Bounds.Bottom), Color.White);
+            spriteBatch.DrawString(myDebugFont, myFpsMonitor.Average.ToString("0.00"), new Vector2(myFpsMonitor.Bounds.Right, myFpsMonitor.AveragePosition), Color.White);
+
             spriteBatch.DrawString(myDebugFont, "POS: " + (myCamera as SimpleCamera).Position, Vector2.Zero, Color.White);
             spriteBatch.DrawString(myDebugFont, "DIR: " + (myCamera as SimpleCamera).Normal, new Vector2(0, 15), Color.White);
 
@@ -350,7 +385,10 @@ namespace Justice
             }
 
             spriteBatch.End();
-           
+
+
+
+
             base.Draw(gameTime);
         }
     }

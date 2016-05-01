@@ -66,10 +66,14 @@
     <Compile Include="Geometry\SkyBox.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpaceGame\Ship.cs" />
+    <Compile Include="Tools\BEPUSerializers.cs" />
     <Compile Include="Tools\CityGenerator.cs" />
     <Compile Include="Tools\GeometryBuilder.cs" />
     <Compile Include="Tools\MeshGenerator.cs" />
+    <Compile Include="Tools\PhysicsSerializers.cs" />
     <Compile Include="Tools\Utils.cs" />
+    <Compile Include="UI\FrameRateMonitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="BEPUik, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">

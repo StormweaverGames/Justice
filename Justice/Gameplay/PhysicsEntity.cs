@@ -37,7 +37,7 @@ namespace Justice.Gameplay
         }
         public float Mass
         {
-            get { return myPhysicsEntity.Mass; }
+            get { return myPhysicsEntity == null ? 0 : myPhysicsEntity.Mass; }
             set { myPhysicsEntity.Mass = value; }
         }
 

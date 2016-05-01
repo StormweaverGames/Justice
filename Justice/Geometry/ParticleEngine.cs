@@ -56,7 +56,7 @@ namespace Justice.Geometry
                 OFFSETS[i] = new Vector3((float)((rand.NextDouble() - 0.5f) * 5), (float)((rand.NextDouble() - 0.5f) * 5), (float)(rand.NextDouble() * 10));
             }
 
-            myVertexBuffer = new VertexBuffer(graphics, VertexPositionColor.VertexDeclaration, myVertices.Length, BufferUsage.None);
+            myVertexBuffer = new VertexBuffer(graphics, VertexPositionColor.VertexDeclaration, myVertices.Length, BufferUsage.WriteOnly);
 
             myEffect = new BasicEffect(graphics);
             myEffect.VertexColorEnabled = true;
@@ -103,8 +103,6 @@ namespace Justice.Geometry
                     }
                 }
             }
-
-            myVertexBuffer.SetData(myVertices);
         }
 
         public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
@@ -113,7 +111,8 @@ namespace Justice.Geometry
             myEffect.World = Matrix.CreateTranslation(myCamPos);
             myEffect.View = matrices.View;
             myEffect.Projection = matrices.Projection;
-
+            
+            myVertexBuffer.SetData(myVertices);
             graphics.SetVertexBuffer(myVertexBuffer);
 
             for(int index = 0; index < myEffect.CurrentTechnique.Passes.Count; index ++)

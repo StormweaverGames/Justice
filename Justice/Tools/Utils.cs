@@ -1,14 +1,19 @@
-﻿using BEPUphysics.Materials;
+﻿using BEPUphysics.CollisionShapes;
+using BEPUphysics.CollisionShapes.ConvexShapes;
+using BEPUphysics.DataStructures;
+using BEPUphysics.Materials;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Justice.Tools
-{
+{    
     public static class Utils
     {
+
         public static Microsoft.Xna.Framework.Matrix Convert(this BEPUutilities.Matrix source)
         {
             Microsoft.Xna.Framework.Matrix result;
@@ -59,6 +64,18 @@ namespace Justice.Tools
             result.M42 = source.M42;
             result.M43 = source.M43;
             result.M44 = source.M44;
+
+            return result;
+        }
+
+        public static BEPUutilities.Quaternion Convert(this Microsoft.Xna.Framework.Quaternion source)
+        {
+            BEPUutilities.Quaternion result;
+
+            result.X = source.X;
+            result.Y = source.Y;
+            result.Z = source.Z;
+            result.W = source.W;
 
             return result;
         }
@@ -120,7 +137,6 @@ namespace Justice.Tools
 
             return new BEPUphysics.Entities.Prefabs.Box(center, size.X, size.Y, size.Z);
         }
-
 
         public static BEPUphysics.Entities.Prefabs.Box GeneratePhysicsBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float friction)
         {
