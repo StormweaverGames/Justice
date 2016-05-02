@@ -14,6 +14,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Justice
 {
@@ -106,11 +107,52 @@ namespace Justice
             myRainSoundInstance.Volume = 0.05f;
             myRainSoundInstance.IsLooped = true;
 
+            Testing();
+
             BuildInterface();            
 
             BuildScene();
 
             // myRainSoundInstance.Play();
+        }
+        
+        private void Testing()
+        {
+            Alignment[] aligments = Enum.GetValues(typeof(Alignment)).Cast<Alignment>().ToArray();
+
+            for(int index = 0; index < aligments.Length; index ++)
+            {
+                Alignment element = aligments[index];
+
+                HorizontalAlignment hor;
+                VerticalAlignment ver;
+
+                element.GetComponents(out hor, out ver);
+
+                System.Diagnostics.Debug.WriteLine("{0} - {1} {2}", element, hor, ver);
+            }
+
+            State initState = new State("Inactive");
+            State activeState = new State("Active");
+            State pausedState = new State("Paused");
+            State exitState = new State("Exit");
+
+            StateChangeCommand resumeCommand = new StateChangeCommand("Resume");
+            StateChangeCommand pauseCommand = new StateChangeCommand("Pause");
+            StateChangeCommand beginCommand = new StateChangeCommand("Begin");
+            StateChangeCommand endCommand = new StateChangeCommand("End");
+            StateChangeCommand exitCommand = new StateChangeCommand("Exit");
+
+            FiniteStateMachine stateMachine = new FiniteStateMachine(initState);
+
+            stateMachine.AddTransition(initState, exitState, exitCommand);
+            stateMachine.AddTransition(initState, activeState, beginCommand);
+
+            stateMachine.AddTransition(pausedState, initState, endCommand);
+            stateMachine.AddTransition(pausedState, activeState, resumeCommand);
+
+            stateMachine.AddTransition(activeState, pausedState, pauseCommand);
+            stateMachine.AddTransition(activeState, initState, endCommand);
         }
 
         private void BuildInterface()
@@ -129,6 +171,11 @@ namespace Justice
             fpsAvg.TextColor = Color.White;
 
             ElementMover avgMover = new ElementMover((itm) => { return new Vector2(fpsMonitor.Bounds.Right, fpsMonitor.AveragePosition); }, fpsAvg);
+
+            TestComponent test = new TestComponent();
+            test.Bounds = new Rectangle(100, 100, 100, 100);
+            
+            myInterface.AddElement(test);
 
             myInterface.AddElement(fpsMonitor);
             myInterface.AddElement(fpsMin);

@@ -20,7 +20,7 @@ namespace Justice.UI
         private VertexBuffer myVertexBuffer;
         private VertexBuffer myTexturedVertexBuffer;
         private BasicEffect myEffect;
-
+        
         private Texture2D myCurrentTexture;
 
         private int myLineCount;
@@ -40,6 +40,15 @@ namespace Justice.UI
 
             myEffect = new BasicEffect(graphics);
             myEffect.VertexColorEnabled = true;
+
+            myEffect.World = Matrix.Identity;
+            myEffect.View = Matrix.CreateTranslation(-0.5f, -0.5f, 0);
+            myEffect.Projection = Matrix.CreateOrthographicOffCenter(0, graphics.Viewport.Width, graphics.Viewport.Height, 0, -1, 1);
+        }
+
+        public void ViewportResised(Viewport viewport)
+        {
+            myEffect.Projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, -1, 1);
         }
 
         public void ResetClipBounds()
@@ -94,6 +103,30 @@ namespace Justice.UI
             myLineCount++;
         }
 
+        public void DrawTri(float x1, float y1, float x2, float y2, float x3, float y3, Color color, float depth)
+        {
+            if (myTriCount + 1 > MY_BUFFER_SIZE / 3)
+                FlushBuffer(ref myTriCount, myTriVertexCache, PrimitiveType.TriangleList);
+
+            myTriVertexCache[myTriCount * 3].Position.X = x1;
+            myTriVertexCache[myTriCount * 3].Position.Y = y1;
+            myTriVertexCache[myTriCount * 3].Position.Z = depth;
+            myTriVertexCache[myTriCount * 3].Color = color;
+
+            myTriVertexCache[myTriCount * 3 + 1].Position.X = x2;
+            myTriVertexCache[myTriCount * 3 + 1].Position.Y = y2;
+            myTriVertexCache[myTriCount * 3 + 1].Position.Z = depth;
+            myTriVertexCache[myTriCount * 3 + 1].Color = color;
+
+            myTriVertexCache[myTriCount * 3 + 2].Position.X = x3;
+            myTriVertexCache[myTriCount * 3 + 2].Position.Y = y3;
+            myTriVertexCache[myTriCount * 3 + 2].Position.Z = depth;
+            myTriVertexCache[myTriCount * 3 + 2].Color = color;
+
+            myTriCount++;
+        }
+
+
         /// <summary>
         /// Draws a rectangular outline in 1 color
         /// </summary>
@@ -114,27 +147,11 @@ namespace Justice.UI
             DrawLine(top, right, bottom, right, color, depth);
         }
 
-        public void DrawTri(float x1, float y1, float x2, float y2, float x3, float y3, Color color, float depth)
+        public void DrawRectangle(Rectangle bounds, Color color, float depth = 0)
         {
-            if (myTriCount + 1 > MY_BUFFER_SIZE / 3)
-                FlushBuffer(ref myTriCount, myTriVertexCache, PrimitiveType.TriangleList);
-
-            myTriVertexCache[myTriCount * 3].Position.X = x1;
-            myTriVertexCache[myTriCount * 3].Position.Y = y1;
-            myTriVertexCache[myTriCount * 3].Position.Z = depth;
-            myTriVertexCache[myTriCount * 3].Color = color;
-
-            myTriVertexCache[myTriCount * 3 + 1].Position.X = x2;
-            myTriVertexCache[myTriCount * 3 + 1].Position.Y = y2;
-            myTriVertexCache[myTriCount * 3 + 1].Position.Z = depth;
-            myTriVertexCache[myTriCount * 3 + 1].Color = color;
-
-            myTriVertexCache[myTriCount * 3 + 2].Position.X = x3;
-            myTriVertexCache[myTriCount * 3 + 2].Position.Y = y3;
-            myTriVertexCache[myTriCount * 3 + 2].Position.Z = depth;
-            myTriVertexCache[myTriCount * 3 + 2].Color = color;
+            DrawRectangle(bounds.Top, bounds.Left, bounds.Bottom, bounds.Right, color, depth);
         }
-
+        
         public void DrawFilledRectangle(float top, float left, float bottom, float right, Color color, float depth = 0)
         {
             if (myTriCount + 2 > MY_BUFFER_SIZE / 3)
@@ -142,6 +159,22 @@ namespace Justice.UI
 
             DrawTri(top, left, top, right, bottom, right, color, depth);
             DrawTri(top, left, bottom, right, bottom, left, color, depth);
+        }
+
+        public void DrawFilledRectangleWithOutline(Rectangle rectangle, float borderWidth, Color innerColor, Color outerColor, BorderStyle borderStyle = BorderStyle.Centered, float depth = 0)
+        {
+            DrawFilledRectangleWithOutline(rectangle.Top, rectangle.Left, rectangle.Bottom, rectangle.Right, borderWidth, innerColor, outerColor, borderStyle, depth);
+        }
+
+        public void DrawFilledRectangleWithOutline(float top, float left, float bottom, float right, float borderWidth, Color innerColor, Color outerColor, BorderStyle borderStyle = BorderStyle.Centered, float depth = 0)
+        {
+            if (myTriCount + 10 > MY_BUFFER_SIZE / 3)
+                FlushBuffer(ref myTriCount, myTriVertexCache, PrimitiveType.TriangleList);
+
+            DrawTri(left, top, right, bottom, left, bottom, innerColor, depth);
+            DrawTri(left, top, right, top, right, bottom, innerColor, depth);
+
+            DrawRectangle(top, left, bottom, right, borderWidth, outerColor, borderStyle, depth);
         }
 
         /// <summary>
@@ -186,6 +219,12 @@ namespace Justice.UI
                     throw new NotImplementedException();
             }
         }
+        
+        public void DrawRectangle(Rectangle bounds, float borderWidth, Color color, BorderStyle borderStyle = BorderStyle.Centered, float depth = 0)
+        {
+            DrawRectangle(bounds.Top, bounds.Left, bounds.Bottom, bounds.Right, borderWidth, color, borderStyle, depth);
+        }
+
 
         /// <summary>
         /// Handles flushing all of the renderer's buffers and draws the result to the screen
@@ -193,7 +232,7 @@ namespace Justice.UI
         public void Flush()
         {
             FlushBuffer(ref myLineCount, myLineVertexCache, PrimitiveType.LineList);
-            FlushBuffer(ref myTriCount, myLineVertexCache, PrimitiveType.TriangleList);
+            FlushBuffer(ref myTriCount, myTriVertexCache, PrimitiveType.TriangleList);
             FlushBuffer(ref myTexturedCount, myTexturedVertexCache, PrimitiveType.TriangleList);
         }
 
@@ -217,7 +256,7 @@ namespace Justice.UI
                 for (int index = 0; index < myEffect.CurrentTechnique.Passes.Count; index++)
                 {
                     myEffect.CurrentTechnique.Passes[index].Apply();
-                    myGraphics.DrawPrimitives(PrimitiveType.LineList, 0, numElements);
+                    myGraphics.DrawPrimitives(primitiveMode, 0, numElements);
                 }
 
                 numElements = 0;
@@ -242,7 +281,7 @@ namespace Justice.UI
                 for (int index = 0; index < myEffect.CurrentTechnique.Passes.Count; index++)
                 {
                     myEffect.CurrentTechnique.Passes[index].Apply();
-                    myGraphics.DrawPrimitives(PrimitiveType.LineList, 0, numElements);
+                    myGraphics.DrawPrimitives(primitiveMode, 0, numElements);
                 }
 
                 numElements = 0;
