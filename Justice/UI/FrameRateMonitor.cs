@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Justice.UI
 {
-    public class FrameRateMonitor
+    public class FrameRateMonitor : ScreenElement
     {
         const int NUM_SAMPLES = 120;
         const int NUM_UTIL_VERTS = 10;
@@ -18,7 +18,6 @@ namespace Justice.UI
         VertexPositionColor[] myVertices;
         VertexBuffer myVertexBuffer;
         BasicEffect myEffect;
-        Rectangle myBounds;
 
         float myMaxValue;
         float myMinValue;
@@ -67,29 +66,14 @@ namespace Justice.UI
             get;
             set;
         }
-
-        public Rectangle Bounds
-        {
-            get { return myBounds; }
-            set
-            {
-                myBounds = value;
-
-                mySampleWidth = myBounds.Width / (float)NUM_SAMPLES;
-
-                for (int index = 0; index < NUM_SAMPLES; index ++)
-                    myVertices[index].Position.X = myBounds.Left + mySampleWidth * index;
-
-                RecalculateAllY();
-            }
-        }
-
+        
         public FrameRateMonitor(Rectangle bounds, float min, float max, bool autoExpand)
         {
             myTimes = new float[NUM_SAMPLES];
             myVertices = new VertexPositionColor[NUM_SAMPLES + NUM_UTIL_VERTS];
 
-            myBounds = bounds;
+            Bounds = bounds;
+
             myMinValue = min;
             myMaxValue = max;
             myRange = max - min;
@@ -97,9 +81,20 @@ namespace Justice.UI
 
             SampleRate = 1;
             mySampleWidth = bounds.Width / (float)NUM_SAMPLES;
+
         }
 
-        public void Update(GameTime gameTime)
+        protected override void OnBoundsUpdating(Rectangle myBounds, Rectangle value)
+        {
+            mySampleWidth = myBounds.Width / (float)NUM_SAMPLES;
+
+            for (int index = 0; index < NUM_SAMPLES; index++)
+                myVertices[index].Position.X = myBounds.Left + mySampleWidth * index;
+
+            RecalculateAllY();
+        }
+
+        protected override void OnUpdating(GameTime gameTime)
         {
             myTimerCounter += gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -142,7 +137,7 @@ namespace Justice.UI
                 myVertices[NUM_UTIL_VERTS + index].Position.Y = myBounds.Top + (myBounds.Height * (1 - (myTimes[index] / myRange) * 0.5f));
         }
         
-        public void Init(GraphicsDevice graphics)
+        protected override void OnInit(GraphicsDevice graphics)
         {
             myVertices[0].Position = new Vector3(Bounds.Left, Bounds.Top, 0);
             myVertices[0].Color = Color.Green;
@@ -184,12 +179,12 @@ namespace Justice.UI
             myVertexBuffer = new VertexBuffer(graphics, VertexPositionColor.VertexDeclaration, NUM_SAMPLES + NUM_UTIL_VERTS, BufferUsage.WriteOnly);
         }
 
-        public void OnViewportResized(Rectangle newBounds)
+        protected override void OnViewportResized(Viewport viewport)
         {
-            myEffect.Projection = Matrix.CreateOrthographicOffCenter(0, newBounds.Width, newBounds.Height, 0, -1, 1);
+            myEffect.Projection = Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, -1, 1);
         }
 
-        public void Render(GraphicsDevice graphics)
+        protected override void OnRender(GraphicsDevice graphics, GameTime gameTime)
         {
             myVertexBuffer.SetData(myVertices);
             graphics.SetVertexBuffer(myVertexBuffer);

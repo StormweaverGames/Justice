@@ -79,3 +79,9 @@
 /processorParam:DebugMode=Auto
 /build:ShadowEffects.fx
 
+#begin Font/default.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Compressed
+/build:Font/default.spritefont
+

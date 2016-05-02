@@ -35,8 +35,8 @@ namespace Justice
 
         SoundEffect rainSound;
         SoundEffectInstance myRainSoundInstance;
-
-        FrameRateMonitor myFpsMonitor;
+        
+        InterfaceManger myInterface;
 
         bool isRayIntersecting;
          
@@ -60,6 +60,8 @@ namespace Justice
             //state.CullMode = CullMode.None;
             //GraphicsDevice.RasterizerState = state;
 
+            SharedContent.Init(Content);
+
             graphics.SynchronizeWithVerticalRetrace = false;
 
             Window.AllowUserResizing = true;
@@ -74,7 +76,8 @@ namespace Justice
                 graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
                 graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
                 graphics.ApplyChanges();
-                myFpsMonitor.OnViewportResized(Window.ClientBounds);
+
+                myInterface.HandleViewportResized(GraphicsDevice.Viewport);
             };
 
             base.Initialize();
@@ -103,13 +106,36 @@ namespace Justice
             myRainSoundInstance.Volume = 0.05f;
             myRainSoundInstance.IsLooped = true;
 
-            myFpsMonitor = new FrameRateMonitor(new Rectangle(0, 45, 120, 120), 0, 60, true);
-            myFpsMonitor.Init(GraphicsDevice);
-            myFpsMonitor.SampleRate = 30;
-            
+            BuildInterface();            
+
             BuildScene();
 
             // myRainSoundInstance.Play();
+        }
+
+        private void BuildInterface()
+        {
+            myInterface = new InterfaceManger(GraphicsDevice);
+
+            FrameRateMonitor fpsMonitor = new FrameRateMonitor(new Rectangle(0, 45, 120, 120), 0, 60, true);
+            fpsMonitor.SampleRate = 30;
+
+            VaryingTextElement fpsMax = new VaryingTextElement(() => { return fpsMonitor.Max.ToString("0.00"); }, new Vector2(fpsMonitor.Bounds.Right, fpsMonitor.Bounds.Top));
+            VaryingTextElement fpsMin = new VaryingTextElement(() => { return fpsMonitor.Min.ToString("0.00"); }, new Vector2(fpsMonitor.Bounds.Right, fpsMonitor.Bounds.Bottom));
+            VaryingTextElement fpsAvg = new VaryingTextElement(() => { return fpsMonitor.Average.ToString("0.00"); }, new Vector2(fpsMonitor.Bounds.Right, fpsMonitor.Bounds.Bottom));
+
+            fpsMax.TextColor = Color.White;
+            fpsMin.TextColor = Color.White;
+            fpsAvg.TextColor = Color.White;
+
+            ElementMover avgMover = new ElementMover((itm) => { return new Vector2(fpsMonitor.Bounds.Right, fpsMonitor.AveragePosition); }, fpsAvg);
+
+            myInterface.AddElement(fpsMonitor);
+            myInterface.AddElement(fpsMin);
+            myInterface.AddElement(fpsMax);
+
+            myInterface.AddElement(fpsAvg);
+            myInterface.AddElement(avgMover);
         }
 
         private void BuildScene()
@@ -349,7 +375,9 @@ namespace Justice
                 Exit();
             
             myScene.Update(gameTime);
-            
+
+            myInterface.Update(gameTime);
+
             myRain.Update(gameTime);
             
             base.Update(gameTime);
@@ -366,15 +394,12 @@ namespace Justice
             myScene.Render(GraphicsDevice, myCamera);
 
             isRayIntersecting = myPlayer.RayCast(3.0f);
-            
-            myFpsMonitor.Update(gameTime);
-            myFpsMonitor.Render(GraphicsDevice);
+
+            myInterface.Render(GraphicsDevice, gameTime);
 
             spriteBatch.Begin();
-
-            spriteBatch.DrawString(myDebugFont, myFpsMonitor.Max.ToString("0.00"), new Vector2(myFpsMonitor.Bounds.Right, myFpsMonitor.Bounds.Top), Color.White);
-            spriteBatch.DrawString(myDebugFont, myFpsMonitor.Min.ToString("0.00"), new Vector2(myFpsMonitor.Bounds.Right, myFpsMonitor.Bounds.Bottom), Color.White);
-            spriteBatch.DrawString(myDebugFont, myFpsMonitor.Average.ToString("0.00"), new Vector2(myFpsMonitor.Bounds.Right, myFpsMonitor.AveragePosition), Color.White);
+            
+            //spriteBatch.DrawString(myDebugFont, myFpsMonitor.Average.ToString("0.00"), new Vector2(myFpsMonitor.Bounds.Right, myFpsMonitor.AveragePosition), Color.White);
 
             spriteBatch.DrawString(myDebugFont, "POS: " + (myCamera as SimpleCamera).Position, Vector2.Zero, Color.White);
             spriteBatch.DrawString(myDebugFont, "DIR: " + (myCamera as SimpleCamera).Normal, new Vector2(0, 15), Color.White);

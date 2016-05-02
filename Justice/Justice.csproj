@@ -40,6 +40,7 @@
   <ItemGroup>
     <Compile Include="Controls\IInputController.cs" />
     <Compile Include="Controls\KeyboardManager.cs" />
+    <Compile Include="Controls\KeyEventArgs.cs" />
     <Compile Include="Controls\SimplePlayerController.cs" />
     <Compile Include="Controls\SimpleCameraController.cs" />
     <Compile Include="Game1.cs" />
@@ -72,8 +73,19 @@
     <Compile Include="Tools\GeometryBuilder.cs" />
     <Compile Include="Tools\MeshGenerator.cs" />
     <Compile Include="Tools\PhysicsSerializers.cs" />
+    <Compile Include="Tools\SharedContent.cs" />
     <Compile Include="Tools\Utils.cs" />
+    <Compile Include="UI\BorderStyle.cs" />
     <Compile Include="UI\FrameRateMonitor.cs" />
+    <Compile Include="UI\InterfaceManger.cs" />
+    <Compile Include="UI\IUserInterface.cs" />
+    <Compile Include="UI\ResourceNames.cs" />
+    <Compile Include="UI\ScreenElement.cs" />
+    <Compile Include="UI\TextElement.cs" />
+    <Compile Include="UI\TextHandleArgs.cs" />
+    <Compile Include="UI\UIRenderer.cs" />
+    <Compile Include="UI\ElementMover.cs" />
+    <Compile Include="UI\VaryingTextElement.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="BEPUik, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
