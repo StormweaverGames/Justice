@@ -16,9 +16,7 @@ namespace Justice.Tools
         List<int> myIndexList;
 
         PrimitiveType myPrimitiveType;
-
-        public BasicEffect DefaultEffect;
-
+        
         public GeometryBuilder(PrimitiveType primitiveType)
         {
             myPrimitiveType = primitiveType;
@@ -54,20 +52,9 @@ namespace Justice.Tools
         {
             myIndexList.Add(index);
         }
-
-        public GeometryMesh Bake(GraphicsDevice device)
+        
+        public GeometryMesh Bake(GraphicsDevice device, int materialId)
         {
-            if (DefaultEffect == null)
-                DefaultEffect = new BasicEffect(device);
-
-            return Bake(device, DefaultEffect);
-        }
-
-        public GeometryMesh Bake(GraphicsDevice device, Effect meshEffect)
-        {
-            if (meshEffect == null)
-                throw new ArgumentException("Mesh must have an effect defined");
-
             if (myVertexList.Count > 0)
             {
                 VertexBuffer vBuffer = new VertexBuffer(device, typeof(T), myVertexList.Count, BufferUsage.WriteOnly);
@@ -81,7 +68,8 @@ namespace Justice.Tools
                     iBuffer.SetData(myIndexList.ToArray());
                 }
 
-                GeometryMesh result = new GeometryMesh(meshEffect, vBuffer, iBuffer, myPrimitiveType);
+                GeometryMesh result = new GeometryMesh(vBuffer, iBuffer, myPrimitiveType);
+                result.MaterialId = materialId;
                 result.SetBounds(GetBounds());
                 return result;
             }

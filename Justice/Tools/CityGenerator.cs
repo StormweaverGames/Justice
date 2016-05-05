@@ -62,9 +62,8 @@ namespace Justice.Tools
                 }
             }
 
-            GeometryMesh part = builder.Bake(graphics);
-            part.Effect = effect;
-            scene.AddRenderable(part);
+            GeometryMesh part = builder.Bake(graphics, 0);
+            scene.AddRenderable("opaque", part);
 
             //mesh.Add(part);
 

@@ -11,18 +11,18 @@ namespace Justice.Geometry
     /// <summary>
     /// Represents a single instance of a renderable model
     /// </summary>
-    public class ModelInstance : IRenderable, ITransformable
+    public class ModelInstance : IRenderable
     {
         protected Model myModel;
         protected Matrix[] myBoneTransformations;
         protected BoundingBox myBounds;
         protected Matrix myWorldTransform;
         protected Texture2D myTexture;
-        
+
         /// <summary>
         /// Gets or sets the transformation matrix for this model instance
         /// </summary>
-        public Matrix Transformation
+        public override Matrix WorldTransform
         {
             get { return myWorldTransform; }
             set
@@ -38,15 +38,7 @@ namespace Justice.Geometry
         {
             get { return myBounds; }
         }
-
-        public override Texture2D Texture
-        {
-            get
-            {
-                return myTexture;
-            }
-        }
-
+        
         /// <summary>
         /// Creates a new model instance from the given model
         /// </summary>

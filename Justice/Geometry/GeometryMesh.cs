@@ -8,13 +8,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Justice.Geometry
 {
-    public class GeometryMesh : IRenderable, ITransformable
+    public class GeometryMesh : IRenderable
     {
         VertexBuffer myVertices;
         IndexBuffer myIndices;
         PrimitiveType myPrimitiveType;
         int myPrimitiveCount;
-        Effect myEffect;
         Matrix myTransform;
         BoundingBox myBounds;
         BoundingBox myRenderBounds;
@@ -26,21 +25,8 @@ namespace Justice.Geometry
         {
             get { return myRenderBounds; }
         }
-
-        public override Texture2D Texture
-        {
-            get
-            {
-                return (myEffect as BasicEffect).Texture;
-            }
-        }
-
-        public Effect Effect
-        {
-            get { return myEffect; }
-            set { myEffect = value; }
-        }
-        public Matrix Transformation
+                
+        public override Matrix WorldTransform
         {
             get { return myTransform; }
             set
@@ -55,18 +41,16 @@ namespace Justice.Geometry
             }
         }
         
-        public GeometryMesh(Effect effect, VertexBuffer vertices, PrimitiveType primitiveType)
+        public GeometryMesh(VertexBuffer vertices, PrimitiveType primitiveType)
         {
-            myEffect = effect;
             myVertices = vertices;
             myPrimitiveType = primitiveType;
             myTransform = Matrix.Identity;
             IsVisible = true;
         }
 
-        public GeometryMesh(Effect effect,VertexBuffer vertices, IndexBuffer indices, PrimitiveType primitiveType)
+        public GeometryMesh(VertexBuffer vertices, IndexBuffer indices, PrimitiveType primitiveType)
         {
-            myEffect = effect;
             myVertices = vertices;
             myIndices = indices;
             myPrimitiveType = primitiveType;
@@ -77,7 +61,7 @@ namespace Justice.Geometry
         public void SetBounds(BoundingBox bounds)
         {
             myBounds = bounds;
-            Transformation = myTransform;
+            WorldTransform = myTransform;
         }
 
         public override void Init(GraphicsDevice graphics)
@@ -101,25 +85,16 @@ namespace Justice.Geometry
 
         public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
-            (myEffect as BasicEffect).View = matrices.View;
-            (myEffect as BasicEffect).Projection = matrices.Projection;
-            (myEffect as BasicEffect).World = myTransform;
-
             graphics.SetVertexBuffer(myVertices);
             graphics.Indices = myIndices;
 
-            for (int passIndex = 0; passIndex < myEffect.CurrentTechnique.Passes.Count; passIndex++)
+            if (myIndices != null)
             {
-                myEffect.CurrentTechnique.Passes[passIndex].Apply();
-
-                if (myIndices != null)
-                {
-                    graphics.DrawIndexedPrimitives(myPrimitiveType, 0, 0, myPrimitiveCount);
-                }
-                else
-                {
-                    graphics.DrawPrimitives(myPrimitiveType, 0, myPrimitiveCount);
-                }
+                graphics.DrawIndexedPrimitives(myPrimitiveType, 0, 0, myPrimitiveCount);
+            }
+            else
+            {
+                graphics.DrawPrimitives(myPrimitiveType, 0, myPrimitiveCount);
             }
         }
 

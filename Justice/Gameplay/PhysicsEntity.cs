@@ -12,14 +12,7 @@ namespace Justice.Gameplay
     public abstract class PhysicsEntity : Entity
     {
         protected BEPUphysics.Entities.Entity myPhysicsEntity;
-        protected ITransformable myTransformTarget;
-
-        public ITransformable TransformTarget
-        {
-            get { return myTransformTarget; }
-            set { myTransformTarget = value; }
-        }
-
+        
         public override Vector3 Position
         {
             get { return myPhysicsEntity.Position.Convert(); }
@@ -64,8 +57,8 @@ namespace Justice.Gameplay
 
         public override void Update(GameTime gameTime)
         {
-            if (myTransformTarget != null)
-                myTransformTarget.Transformation = myPhysicsEntity.WorldTransform.Convert();
+            if (myRenderable != null)
+                myRenderable.WorldTransform = myPhysicsEntity.WorldTransform.Convert();
         }
 
         public static implicit operator BEPUphysics.Entities.Entity (PhysicsEntity entity)

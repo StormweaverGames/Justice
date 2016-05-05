@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BEPUphysics.Paths;
 using Microsoft.Xna.Framework;
+using Justice.Tools;
 
 namespace Justice.Gameplay
 {
@@ -18,22 +19,35 @@ namespace Justice.Gameplay
             set;
         }
 
+        public override Matrix WorldTransform
+        {
+            get
+            {
+                if (myRenderable != null)
+                    return myRenderable.WorldTransform;
+                else
+                    return Matrix.Identity;
+            }
+            set
+            {
+                myPhysicsEntity.WorldTransform = value.Convert();
+            }
+        }
+
         public SimplePhysicsEntity(BEPUphysics.Entities.Entity physicsObject, float mass)
         {
             myPhysicsEntity = physicsObject;
             Mass = mass;
         }
 
-        public SimplePhysicsEntity(BEPUphysics.Entities.Entity physicsObject, float mass, ITransformable transformTarget)
+        public SimplePhysicsEntity(BEPUphysics.Entities.Entity physicsObject, float mass, IRenderable renderable)
         {
             myPhysicsEntity = physicsObject;
             Mass = mass;
-            myTransformTarget = transformTarget;
+            myRenderable = renderable;
             
             myPhysicsEntity.PositionUpdateMode = BEPUphysics.PositionUpdating.PositionUpdateMode.Continuous;
-
-            if (transformTarget is IRenderable)
-                myRenderable = transformTarget as IRenderable;
+            
         }
 
         public override void Update(GameTime gameTime)

@@ -21,12 +21,7 @@ namespace Justice.Gameplay
                 return myRenderable.RenderBounds;
             }
         }
-
-        public override Texture2D Texture
-        {
-            get { return myRenderable == null ? null : myRenderable.Texture; }
-        }
-
+        
         public override bool IsVisible
         {
             get { return myRenderable != null && myRenderable.IsVisible; }

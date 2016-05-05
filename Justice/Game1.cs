@@ -175,7 +175,7 @@ namespace Justice
             TestComponent test = new TestComponent();
             test.Bounds = new Rectangle(100, 100, 100, 100);
             
-            myInterface.AddElement(test);
+            //myInterface.AddElement(test);
 
             myInterface.AddElement(fpsMonitor);
             myInterface.AddElement(fpsMin);
@@ -202,114 +202,17 @@ namespace Justice
             effect.AmbientLightColor = new Vector3(0.15f);
             effect.TextureEnabled = true;
             effect.Texture = Content.Load<Texture2D>("concrete");
-
-            BasicEffect effect2 = effect.Clone() as BasicEffect;
-            effect2.TextureEnabled = true;
-            effect2.LightingEnabled = false;
-            effect2.Texture = Content.Load<Texture2D>("bloodSplat1");
-
-            BasicEffect effect3 = effect.Clone() as BasicEffect;
-            effect3.TextureEnabled = true;
-            effect3.Texture = Content.Load<Texture2D>("chainFence");
-
-            geometryBuilder.DefaultEffect = effect;
+            effect.CurrentTechnique = effect.Techniques["BasicEffect_PixelLighting_Texture"];
             
-            // Building A
-            geometryBuilder.AddCube(new Vector3(25, 25, 0), new Vector3(60, 50, 50));
-            geometryBuilder.AddCube(new Vector3(25, 50, 0), new Vector3(50, 60, 50));
-
-            // Building B
-            geometryBuilder.AddCube(new Vector3(70, 25, 0), new Vector3(115, 50, 60));
-            geometryBuilder.AddCube(new Vector3(90, 50, 0), new Vector3(115, 70, 60));
-
-            // Building C
-            geometryBuilder.AddCube(new Vector3(60, 60, 0), new Vector3(80, 105, 80));
-            geometryBuilder.AddCube(new Vector3(25, 70, 0), new Vector3(60, 105, 80));
-
-            // Building D
-            geometryBuilder.AddCube(new Vector3(90, 80, 0), new Vector3(115, 105, 60));
-
-            // Sidewalk
-            geometryBuilder.AddCube(new Vector3(20, 20, 0), new Vector3(120, 110, 0.25f));
-
-            // Road A
-            geometryBuilder.AddCube(new Vector3(-150, -20, 0), new Vector3(250, 20, 0.1f));
-            // Road B
-            geometryBuilder.AddCube(new Vector3(-20, 20, 0), new Vector3(20, 110, 0.1f));
-            // Road C
-            geometryBuilder.AddCube(new Vector3(-20, -20, 0), new Vector3(20, -140, 0.1f));
-            // Road D
-            geometryBuilder.AddCube(new Vector3(120, 20, 0), new Vector3(160, 110, 0.1f));
-
-            // Sidewalk 2
-            geometryBuilder.AddCube(new Vector3(-150, 20, 0), new Vector3(-20, 110, 0.25f));
-
-            // Building E
-            geometryBuilder.AddCube(new Vector3(-145, 25, 0), new Vector3(-100, 105, 60));
-            // Building F
-            geometryBuilder.AddCube(new Vector3(-90, 25, 0), new Vector3(-25, 60, 60));
-            // Building G
-            geometryBuilder.AddCube(new Vector3(-90, 70, 0), new Vector3(-25, 105, 60));
-
-            //Sidewalk 3
-            geometryBuilder.AddCube(new Vector3(-150, -140, 0), new Vector3(-20, -20, 0.25f));
-
-            // Building H
-            geometryBuilder.AddCube(new Vector3(-145, -90, 0), new Vector3(-120, -25, 60));
-            geometryBuilder.AddCube(new Vector3(-120, -60, 0), new Vector3(-110, -90, 60));
-            // Building I
-            geometryBuilder.AddCube(new Vector3(-110, -50, 0), new Vector3(-70, -25, 60));
-            geometryBuilder.AddCube(new Vector3(-100, -70, 0), new Vector3(-70, -50, 60));
-            // Building J
-            geometryBuilder.AddCube(new Vector3(-60, -70, 0), new Vector3(-25, -25, 50));
-            // Building K
-            geometryBuilder.AddCube(new Vector3(-145, -100, 0), new Vector3(-110, -135, 50));
-            // Building L
-            geometryBuilder.AddCube(new Vector3(-100, -130, 0), new Vector3(-25, -80, 100));
-            geometryBuilder.AddCube(new Vector3(-100, -135, 0), new Vector3(-70, -130, 100));
-            geometryBuilder.AddCube(new Vector3(-50, -135, 0), new Vector3(-25, -130, 100));
-
-            //Sidewalk 4
-            geometryBuilder.AddCube(new Vector3(160, 20, 0), new Vector3(250, 110, 0.25f));
-
-            // Building U
-            geometryBuilder.AddCube(new Vector3(165, 70, 0), new Vector3(210, 105, 60));
-            // Building V
-            geometryBuilder.AddCube(new Vector3(165, 25, 0), new Vector3(200, 60, 60));
-            // Building W
-            geometryBuilder.AddCube(new Vector3(220, 25, 0), new Vector3(245, 105, 60));
-            geometryBuilder.AddCube(new Vector3(210, 25, 0), new Vector3(220, 60, 60));
-
-            //Sidewalk 5
-            geometryBuilder.AddCube(new Vector3(20, -20, 0), new Vector3(250, -140, 0.25f));
-
-            // Building M
-            geometryBuilder.AddCube(new Vector3(25, -50, 0), new Vector3(80, -25, 60));
-            geometryBuilder.AddCube(new Vector3(70, -50, 0), new Vector3(80, -70, 60));
-            // Building N
-            geometryBuilder.AddCube(new Vector3(25, -60, 0), new Vector3(50, -100, 60));
-            geometryBuilder.AddCube(new Vector3(50, -60, 0), new Vector3(60, -70, 60));
-            // Building O
-            geometryBuilder.AddCube(new Vector3(25, -110, 0), new Vector3(80, -135, 60));
-            geometryBuilder.AddCube(new Vector3(60, -80, 0), new Vector3(80, -110, 60));
-            // Building P
-            geometryBuilder.AddCube(new Vector3(90, -25, 0), new Vector3(120, -80, 60));
-            // Building Q
-            geometryBuilder.AddCube(new Vector3(130, -25, 0), new Vector3(200, -60, 60));
-            // Building R
-            geometryBuilder.AddCube(new Vector3(90, -90, 0), new Vector3(160, -135, 60));
-            geometryBuilder.AddCube(new Vector3(130, -70, 0), new Vector3(160, -90, 60));
-            // Building S
-            geometryBuilder.AddCube(new Vector3(170, -70, 0), new Vector3(245, -100, 60));
-            geometryBuilder.AddCube(new Vector3(210, -25, 0), new Vector3(245, -70, 60));
-            // Building T
-            geometryBuilder.AddCube(new Vector3(170, -110, 0), new Vector3(245, -135, 60));
-
-            GeometryMesh mesh = geometryBuilder.Bake(GraphicsDevice);
+            int contreteId = MaterialManager.RegisterMaterial(new Geometry.EffectMaterial("Concrete", Content.Load<Texture2D>("concrete")));
+            int bloodId = MaterialManager.RegisterMaterial(new Geometry.EffectMaterial("Blood", Content.Load<Texture2D>("bloodSplat1")));
+            int fenceId = MaterialManager.RegisterMaterial(new Geometry.EffectMaterial("ChainFence", Content.Load<Texture2D>("chainFence")));
+            int skyboxId = MaterialManager.RegisterMaterial(new Geometry.EffectMaterial("Skybox", Content.Load<Texture2D>("skybox")));
+            int redVelevetId = MaterialManager.RegisterMaterial(new Geometry.EffectMaterial("RedVelet", Content.Load<Texture2D>("carpet_herlen_gustahome")));
             
             geometryBuilder.Clear();
             geometryBuilder.AddSkyBox();
-            SkyBox skyBox = new SkyBox(geometryBuilder.Bake(GraphicsDevice), Content.Load<Texture2D>("skyBox"));
+            SkyBox skyBox = new SkyBox(geometryBuilder.Bake(GraphicsDevice, skyboxId), Content.Load<Texture2D>("skyBox"));
 
             geometryBuilder.Clear();
 
@@ -317,22 +220,19 @@ namespace Justice
             geometryBuilder.AddCube(new Vector3(-0.01f, 4f, 1.8f), new Vector3(0.2f, 4.5f, 2.5f));
             geometryBuilder.AddCube(new Vector3(-4.5f, 20f, 0), new Vector3(-4, 21f, 0.255f));
             geometryBuilder.AddCube(new Vector3(-9.99f, 45f, 1.8f), new Vector3(-10.2f, 46f, 2.5f));
-            geometryBuilder.DefaultEffect = effect2;
-            GeometryMesh bloodMesh = geometryBuilder.Bake(GraphicsDevice);
-            Decal blood = new Decal(bloodMesh);
+            //geometryBuilder.DefaultEffect = effect2;
+            GeometryMesh blood = geometryBuilder.Bake(GraphicsDevice, bloodId);
 
             geometryBuilder.Clear();
-            geometryBuilder.DefaultEffect = effect3;
+            //geometryBuilder.DefaultEffect = effect3;
             geometryBuilder.AddCube(new Vector3(-5, 20, 0), new Vector3(0, 20, 3.2f));
             geometryBuilder.AddCube(new Vector3(-5.25f, 19.85f, 0), new Vector3(-5.0f, 20.05f, 3.2f));
-            GeometryMesh fenceMesh = geometryBuilder.Bake(GraphicsDevice);
-            Decal fences = new Decal(fenceMesh);
+            GeometryMesh fence = geometryBuilder.Bake(GraphicsDevice, fenceId);
 
             geometryBuilder.Clear();
-
-            geometryBuilder.DefaultEffect = effect;
+            
             geometryBuilder.AddCube(-10, -10, -0.25f, 10, 10, 0.25f);
-            GeometryMesh lift = geometryBuilder.Bake(GraphicsDevice);
+            GeometryMesh lift = geometryBuilder.Bake(GraphicsDevice, contreteId);
 
             SimplePhysicsEntity liftEntity = new SimplePhysicsEntity(lift.RenderBounds.GeneratePhysicsBox(), 0, lift);
             liftEntity.Position = new Vector3(0, 20, 15);
@@ -363,8 +263,7 @@ namespace Justice
             
             geometryBuilder.Clear();
             geometryBuilder.AddCube(0, 0, 6, 10, 10, 6.5f);
-            geometryBuilder.DefaultEffect = effect;
-            GeometryMesh awning = geometryBuilder.Bake(GraphicsDevice);
+            GeometryMesh awning = geometryBuilder.Bake(GraphicsDevice, redVelevetId);
 
             Vector3 center = (awning.RenderBounds.Max + awning.RenderBounds.Min) / 2.0f;
             scene.AddCollider(new Box(new BEPUutilities.Vector3(center.X, center.Y, center.Z), awning.RenderBounds.Max.X - awning.RenderBounds.Min.X, awning.RenderBounds.Max.Y - awning.RenderBounds.Min.Y, awning.RenderBounds.Max.Z - awning.RenderBounds.Min.Z));
@@ -374,17 +273,35 @@ namespace Justice
 
             myRain = new ParticleEngine(GraphicsDevice, scene, 500);
 
+            BasicEffectInterface effectInterface = new BasicEffectInterface(effect, effect.CurrentTechnique.Name);
+            effectInterface.InitBasicEffect();
+
+            BasicEffectInterface effectInterface2 = new BasicEffectInterface(new BasicEffect(GraphicsDevice), "BasicEffect_Texture_NoFog");
+            effectInterface2.InitBasicEffect();
+
+            EffectGroup skyboxEffect = new EffectGroup(GraphicsDevice, effectInterface2, "skybox");
+            skyboxEffect.DepthStencilState = DepthStencilState.None;
+            EffectGroup opaqueEffect = new EffectGroup(GraphicsDevice, effectInterface, "opaque");
+            opaqueEffect.BlendState = BlendState.Opaque;
+            EffectGroup transparentEffect = new EffectGroup(GraphicsDevice, effectInterface, "transparent");
+            transparentEffect.BlendState = BlendState.AlphaBlend;
+            transparentEffect.Rasterizer = RasterizerState.CullNone;
+
+            scene.AddEffectGroup(skyboxEffect);
+            scene.AddEffectGroup(opaqueEffect);
+            scene.AddEffectGroup(transparentEffect);
+
             CityGenerator gen = new CityGenerator();
             geometryBuilder.Clear();
-
-            scene.AddRenderable(skyBox);
-            scene.AddRenderable(myRain);
-            scene.AddRenderable(awning);
-            scene.Add(liftEntity);
+            
+            scene.AddRenderable("skybox", skyBox);
+            scene.AddRenderable("opaque", myRain);
+            scene.AddRenderable("opaque", awning);
+            scene.Add("opaque", liftEntity);
             gen.GenerateCity(scene, GraphicsDevice, effect, 10, 10);
             //scene.AddRenderable(mesh);
-            scene.AddRenderable(blood);
-            scene.AddRenderable(fences);
+            scene.AddRenderable("transparent", blood);
+            scene.AddRenderable("transparent", fence);
 
             myScene = scene;
             myCamera = camera;

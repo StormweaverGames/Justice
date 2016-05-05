@@ -29,12 +29,22 @@ namespace Justice.Geometry
         /// <summary>
         /// Gets the texture for this renderable isntance
         /// </summary>
-        public virtual Texture2D Texture { get { return null; } }
+        public Texture2D Texture { get { return (Texture2D)MaterialManager.Instance[MaterialId].DiffuseTexture; } }
 
         /// <summary>
         /// Gets whether this renderable is a "pre-render" renderable, which will be rendered before all other renderables
         /// </summary>
         public virtual bool IsPreRendered { get; }
+
+        /// <summary>
+        /// Gets or sets the world transformation matrix for this renderable
+        /// </summary>
+        public virtual Matrix WorldTransform { get; set; } = Matrix.Identity;
+
+        /// <summary>
+        /// Gets or sets the material ID for this renderable instance
+        /// </summary>
+        public int MaterialId { get; set; }
 
         /// <summary>
         /// Initializes this renderable instance
@@ -51,6 +61,8 @@ namespace Justice.Geometry
         {
             return cameraFrustum.Intersects(RenderBounds);
         }
+
+        public virtual void PreRender(GraphicsDevice graphics, ICamera camera) { }
 
         /// <summary>
         /// Renders this renderable instance

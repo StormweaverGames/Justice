@@ -44,9 +44,10 @@ namespace Justice.Geometry
         /// </summary>
         protected List<IUpdateable> myUpdateables;
         /// <summary>
-        /// Stores the intenal list of renderable items in this scene
+        /// Adds a new effect group to this scene
         /// </summary>
-        protected List<IRenderable> myRenderables;
+        protected Dictionary<string, EffectGroup> myEffectGroups;
+        protected List<EffectGroup> myEffectList;
 
         protected Space myPhysicsSpace;
 
@@ -63,13 +64,13 @@ namespace Justice.Geometry
         /// </summary>
         protected IScene()
         {
-            myRenderables = new List<IRenderable>();
             myUpdateables = new List<IUpdateable>();
+
+            myEffectGroups = new Dictionary<string, EffectGroup>();
+            myEffectList = new List<EffectGroup>();
 
             myPhysicsSpace = new Space();
             myPhysicsSpace.ForceUpdater.Gravity = new BEPUutilities.Vector3(0, 0, -9.81f);
-
-            myRenderables.Add(new NullTextureBinder());
         }
 
         /// <summary>
@@ -78,64 +79,44 @@ namespace Justice.Geometry
         /// <param name="action">The action to perform on all renderables</param>
         public void IterateRenderables(Action<IRenderable> action)
         {
-            // Iterate over all renderables
-            for(int index = 0; index < myRenderables.Count; index ++)
-            {
-                // If the renderable is not null
-                if (myRenderables[index] != null)
-                {
-                    // Perform the action on the device
-                    action(myRenderables[index]);
-                }
-            }
-        }
-
-        private List<IRenderable> internalUseCollection;
-        /// <summary>
-        /// Gets an array of visible renderable elements in a camera's view
-        /// This is a slow-ass operation, so use sparingly
-        /// </summary>
-        /// <param name="camera">The camera to check for visibility against</param>
-        /// <returns></returns>
-        public IRenderable[] GetVisible(ICamera camera)
-        {
-            // If the internal collection is null, then make one
-            if (internalUseCollection != null)
-                internalUseCollection = new List<IRenderable>(100);
-
-            // Clear the internal use collection
-            internalUseCollection.Clear();
-
-            // Creates the camera frustum to use
-            BoundingFrustum cameraFrustum = new BoundingFrustum(camera.Matrices.ViewProj);
+            for (int index = 0; index < myEffectList.Count; index++)
+                myEffectList[index].IterateRenderables(action);
 
             // Iterate over all renderables
-            for (int index = 0; index < myRenderables.Count; index++)
-            {
-                // Check first for null, then perform a rough pass filter, then fine pass
-                if (myRenderables[index] != null && cameraFrustum.Intersects(myRenderables[index].RenderBounds) && myRenderables[index].ShouldRender(cameraFrustum))
-                {
-                    internalUseCollection.Add(myRenderables[index]);
-                }
-            }
-
-            // Return the collection
-            return internalUseCollection.ToArray();
+            //for(int index = 0; index < myRenderables.Count; index ++)
+            //{
+            //    // If the renderable is not null
+            //    if (myRenderables[index] != null)
+            //    {
+            //        // Perform the action on the device
+            //        action(myRenderables[index]);
+            //    }
+            //}
         }
-
-        public void Add(PhysicsEntity entity)
+        
+        public void Add(string effectGroup, PhysicsEntity entity)
         {
             entity.AddToScene(myPhysicsSpace);
             myUpdateables.Add(entity);
-            myRenderables.Add(entity);
+            AddRenderable(effectGroup, entity);
         }
 
-        public void Add(Entity entity)
+        public void Add(string effectGroup, Entity entity)
         {
             myUpdateables.Add(entity);
-            myRenderables.Add(entity);
+            AddRenderable(effectGroup, entity);
         }
 
+        /// <summary>
+        /// Adds a new effect group that entities can be added to
+        /// </summary>
+        /// <param name="group"></param>
+        public void AddEffectGroup(EffectGroup group)
+        {
+            myEffectGroups.Add(group.EffectName, group);
+            myEffectList.Add(group);
+            myEffectList.Sort((X, Y) => X.RenderPriority.CompareTo(Y.RenderPriority));
+        }
 
         public void Add(EntityPather pather)
         {
@@ -191,61 +172,25 @@ namespace Justice.Geometry
         }
         
         /// <summary>
+        /// Adds a new renderable instance to the given effect group
+        /// </summary>
+        /// <param name="effectName">The name of the effect group to add to</param>
+        /// <param name="renderable">The renderable instance to add</param>
+        public void AddRenderable(string effectName, IRenderable renderable)
+        {
+            myEffectGroups[effectName].AddRenderable(renderable);
+        }
+
+        /// <summary>
         /// Adds a renderable isntance to this scene
         /// </summary>
         /// <param name="renderable">The isntance to add to the scene</param>
-        public void AddRenderable(IRenderable renderable)
-        {
-            int pos = __getRenderableInsert(renderable);
-            myRenderables.Insert(pos, renderable);
-        }
+        //public void AddRenderable(IRenderable renderable)
+        //{
+        //    int pos = __getRenderableInsert(renderable);
+        //    myRenderables.Insert(pos, renderable);
+        //}
         
-        private static IRenderable __getRenderableInsertCached;
-        protected int __getRenderableInsert(IRenderable renderable, int start = 0, int end = -1)
-        {
-            if (renderable.IsPreRendered)
-                return 1;
-
-            if (renderable.IsTransparent)
-                return myRenderables.Count;
-
-            if (renderable.Texture == null)
-            {
-                int pos = myRenderables.FindIndex(1, x => !x.IsPreRendered);
-                return pos == -1 ? myRenderables.Count : pos;
-            }
-            else
-            {
-                start = myRenderables.FindIndex(start + 1, x => x.Texture != null);
-
-                if (start == -1)
-                    return myRenderables.Count;
-            }
-
-            end = end == -1 ? myRenderables.Count - 1 : end;
-
-            int mid = (start + end) / 2;
-
-            if (mid == start)
-                return mid + 1;
-
-            __getRenderableInsertCached = myRenderables[mid];
-
-            if (__getRenderableInsertCached.Texture == null)
-                return __getRenderableInsert(renderable, mid, end);
-            else
-            {
-                int comparison = __getRenderableInsertCached.Texture.GetHashCode().CompareTo(renderable.GetHashCode());
-
-                if (comparison == 0)
-                    return mid;
-                else if (comparison < 0)
-                    return __getRenderableInsert(renderable, start, mid);
-                else
-                    return __getRenderableInsert(renderable, mid, end);
-            }
-        }
-
         /// <summary>
         /// Adds an updateable isntance to this scene
         /// </summary>
@@ -268,15 +213,9 @@ namespace Justice.Geometry
             // Creates the camera frustum to use
             BoundingFrustum cameraFrustum = new BoundingFrustum(camera.Matrices.ViewProj);
 
-            // Iterate over all renderables
-            for (int index = 0; index < myRenderables.Count; index++)
+            for (int index = 0; index < myEffectList.Count; index++)
             {
-                // Check first for null, then perform a rough pass filter, then fine pass
-                if (myRenderables[index] != null && myRenderables[index].IsVisible && myRenderables[index].ShouldRender(cameraFrustum))
-                {
-                    // If the item should be rendered, draw that bitch
-                    myRenderables[index].Render(graphics, camera.Matrices);
-                }
+                myEffectList[index].Render(graphics, cameraFrustum, camera);
             }
         }
 
@@ -291,11 +230,6 @@ namespace Justice.Geometry
             for (int index = 0; index < myUpdateables.Count; index++)
                 if (myUpdateables[index].IsActive)
                     myUpdateables[index].Update(gameTime);
-        }
-
-        internal void RemoveRenderable(IRenderable item)
-        {
-            myRenderables.Remove(item);
         }
     }
 }

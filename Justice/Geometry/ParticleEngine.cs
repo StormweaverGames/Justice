@@ -68,29 +68,14 @@ namespace Justice.Geometry
         //Ray myRay;
         public void Update(GameTime gameTime)
         {
-            Matrix matrix = Matrix.CreateTranslation(myCamPos);
+            //Matrix matrix = Matrix.CreateTranslation(myCamPos);
 
             for (int index = 0; index < myParticles.Length; index ++)
             {
                 if (myParticles[index].Alive)
                 {
                     myParticles[index].Position += myParticles[index].Direction * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-                    //myParticles[index].Color = Color.Lerp(Color.DarkBlue * 0.5f, Color.DarkBlue, myParticles[index].Position.Z / 50);
-
-                    //myRay.Position = Vector3.Transform(myParticles[index].Position, matrix);
-                    //myRay.Direction = myParticles[index].Direction;
-
-                    //float? d = myScene.Intersects(myRay);
-
-                    //if (d.HasValue)
-                    //{
-                    //    if (d < 15 * (float)gameTime.ElapsedGameTime.TotalSeconds)
-                    //    {
-                    //        SpawnParticle(ref myParticles[index], false);
-                    //    }
-                    //}
-
+                    
                     if (myParticles[index].Position.Z < -10)
                     {
                         SpawnParticle(ref myParticles[index], false);
@@ -105,22 +90,17 @@ namespace Justice.Geometry
             }
         }
 
+        public override void PreRender(GraphicsDevice graphics, ICamera camera)
+        {
+            WorldTransform = Matrix.CreateTranslation(Matrix.Invert(camera.Matrices.View).Translation);
+        }
+
         public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
-            myCamPos = Matrix.Invert(matrices.View).Translation;
-            myEffect.World = Matrix.CreateTranslation(myCamPos);
-            myEffect.View = matrices.View;
-            myEffect.Projection = matrices.Projection;
-            
             myVertexBuffer.SetData(myVertices);
             graphics.SetVertexBuffer(myVertexBuffer);
 
-            for(int index = 0; index < myEffect.CurrentTechnique.Passes.Count; index ++)
-            {
-                myEffect.CurrentTechnique.Passes[index].Apply();
-
-                graphics.DrawPrimitives(PrimitiveType.LineList, 0, myVertices.Length / 2);
-            }
+            graphics.DrawPrimitives(PrimitiveType.LineList, 0, myVertices.Length / 2);
         }
 
         private void SpawnParticle(ref Particle particle, bool init = true)
