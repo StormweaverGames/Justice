@@ -86,6 +86,11 @@ namespace Justice.Geometry
             myTransform = Matrix.CreateTranslation(Matrix.Invert(camera.Matrices.View).Translation);
         }
 
+        public override void RenderShadow(GraphicsDevice graphics, CameraMatrices matrices)
+        {
+            // We don't cast shadows fo the skybox
+        }
+
         public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
             //graphics.SamplerStates[0] = mySamplerState;            

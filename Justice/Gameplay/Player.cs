@@ -23,6 +23,8 @@ namespace Justice.Gameplay
         public const float CROUCH_HEIGHT = 0.8f;
         public const float PRONE_HEIGHT = 0.3f;
 
+        public const float PLAYER_WEIGHT = 90.0f;
+
         CharacterController myController;
         Space mySpace;
 
@@ -54,6 +56,7 @@ namespace Justice.Gameplay
         public Player(Vector3 position)
         {
             myController = new CharacterController();
+            myController.Body.Mass = PLAYER_WEIGHT;
             myController.Body.Position = position.Convert();
             myController.Down = new BEPUutilities.Vector3(0, 0, -1);
             myController.BodyRadius = 1.0f;
@@ -62,6 +65,9 @@ namespace Justice.Gameplay
             myController.ProneSpeed = CRAWL_SPEED;
             myController.HorizontalMotionConstraint.MovementMode = MovementMode.Floating;
             myController.JumpSpeed = 15;
+            myController.TractionForce = myController.TractionForce * 9.0f;
+            myController.SlidingForce = myController.SlidingForce * 9.0f;
+            myController.AirForce = myController.AirForce * 9.0f;
 
             myController.StanceManager.StandingHeight = STAND_HEIGHT;
             myController.StanceManager.CrouchingHeight = CROUCH_HEIGHT;

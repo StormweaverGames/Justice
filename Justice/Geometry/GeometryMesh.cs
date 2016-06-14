@@ -83,6 +83,12 @@ namespace Justice.Geometry
             }
         }
 
+        public override void RenderShadow(GraphicsDevice graphics, CameraMatrices matrices)
+        {
+            // For now, just draw all geometry at full res
+            Render(graphics, matrices);
+        }
+
         public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
         {
             graphics.SetVertexBuffer(myVertices);

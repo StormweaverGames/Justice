@@ -42,9 +42,22 @@ namespace Justice.Geometry
         public virtual Matrix WorldTransform { get; set; } = Matrix.Identity;
 
         /// <summary>
+        /// Gets or sets the local transformation matrix for this renderable
+        /// </summary>
+        public virtual Matrix LocalTransform { get; set; } = Matrix.Identity;
+
+        /// <summary>
         /// Gets or sets the material ID for this renderable instance
         /// </summary>
         public int MaterialId { get; set; }
+
+        /// <summary>
+        /// Gets the material assigned to this renderable instance
+        /// </summary>
+        public EffectMaterial Material
+        {
+            get { return MaterialManager.Instance[MaterialId]; }
+        }
 
         /// <summary>
         /// Initializes this renderable instance
@@ -63,6 +76,14 @@ namespace Justice.Geometry
         }
 
         public virtual void PreRender(GraphicsDevice graphics, ICamera camera) { }
+
+        /// <summary>
+        /// Renders this renderable instance's shadow casting geometry
+        /// </summary>
+        /// <param name="graphics">The graphics device to use for rendering</param>
+        /// <param name="matrices">The camera's transformation matrices</param>
+        /// <param name="worldTransform">The world transformation to be applied to the renderable</param>
+        public abstract void RenderShadow(GraphicsDevice graphics, CameraMatrices matrices);
 
         /// <summary>
         /// Renders this renderable instance

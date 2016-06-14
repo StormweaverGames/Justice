@@ -26,6 +26,8 @@ namespace Justice.Geometry
 
         void SetWorldMatrix(Matrix value);
 
+        void SetLocalMatrix(Matrix localTransform);
+
         void SetViewMatrix(Matrix value);
 
         void SetProjectionMatrix(Matrix value);

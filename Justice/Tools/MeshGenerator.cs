@@ -122,6 +122,74 @@ namespace Justice.Tools
             builder.AddIndices(indices);
         }
 
+
+        public static void AddCubeTransformed(this GeometryBuilder<VertexPositionNormalTexture> builder, Vector3 min, Vector3 max, Matrix matrix)
+        {
+            VertexPositionNormalTexture[] verts = new VertexPositionNormalTexture[24];
+            int[] indices = new int[36];
+
+            Vector3 size = Vector3.Max(min, max) - Vector3.Min(min, max);
+            Vector3 center = (max + min) / 2.0f;
+
+            size /= 2.0f;
+
+            // Top surface
+            verts[0] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_FRONT_LEFT, matrix), NORMAL_TOP, TEXTURE_BOTTOM_LEFT);
+            verts[1] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_FRONT_RIGHT, matrix), NORMAL_TOP, TEXTURE_BOTTOM_RIGHT);
+            verts[2] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_BACK_LEFT, matrix), NORMAL_TOP, TEXTURE_TOP_LEFT);
+            verts[3] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_BACK_RIGHT, matrix), NORMAL_TOP, TEXTURE_TOP_RIGHT);
+
+            // Bottom Surface
+            verts[4] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_BACK_LEFT, matrix), NORMAL_BOTTOM, TEXTURE_BOTTOM_LEFT);
+            verts[5] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_BACK_RIGHT, matrix), NORMAL_BOTTOM, TEXTURE_BOTTOM_RIGHT);
+            verts[6] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_FRONT_LEFT, matrix), NORMAL_BOTTOM, TEXTURE_TOP_LEFT);
+            verts[7] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_FRONT_RIGHT, matrix), NORMAL_BOTTOM, TEXTURE_TOP_RIGHT);
+
+            // Front Surface
+            verts[8] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_FRONT_LEFT, matrix), NORMAL_FRONT, TEXTURE_BOTTOM_LEFT);
+            verts[9] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_FRONT_RIGHT, matrix), NORMAL_FRONT, TEXTURE_BOTTOM_RIGHT);
+            verts[10] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_FRONT_LEFT, matrix), NORMAL_FRONT, TEXTURE_TOP_LEFT);
+            verts[11] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_FRONT_RIGHT, matrix), NORMAL_FRONT, TEXTURE_TOP_RIGHT);
+
+            // Back Surface
+            verts[12] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_BACK_RIGHT, matrix), NORMAL_BACK, TEXTURE_BOTTOM_LEFT);
+            verts[13] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_BACK_LEFT, matrix), NORMAL_BACK, TEXTURE_BOTTOM_RIGHT);
+            verts[14] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_BACK_RIGHT, matrix), NORMAL_BACK, TEXTURE_TOP_LEFT);
+            verts[15] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_BACK_LEFT, matrix), NORMAL_BACK, TEXTURE_TOP_RIGHT);
+
+            // Left Surface
+            verts[16] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_BACK_LEFT, matrix), NORMAL_LEFT, TEXTURE_BOTTOM_LEFT);
+            verts[17] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_FRONT_LEFT, matrix), NORMAL_LEFT, TEXTURE_BOTTOM_RIGHT);
+            verts[18] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_BACK_LEFT, matrix), NORMAL_LEFT, TEXTURE_TOP_LEFT);
+            verts[19] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_FRONT_LEFT, matrix), NORMAL_LEFT, TEXTURE_TOP_RIGHT);
+
+            // Right Surface
+            verts[20] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_FRONT_RIGHT, matrix), NORMAL_RIGHT, TEXTURE_BOTTOM_LEFT);
+            verts[21] = new VertexPositionNormalTexture(Vector3.Transform(center + size * BOTTOM_BACK_RIGHT, matrix), NORMAL_RIGHT, TEXTURE_BOTTOM_RIGHT);
+            verts[22] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_FRONT_RIGHT, matrix), NORMAL_RIGHT, TEXTURE_TOP_LEFT);
+            verts[23] = new VertexPositionNormalTexture(Vector3.Transform(center + size * TOP_BACK_RIGHT, matrix), NORMAL_RIGHT, TEXTURE_TOP_RIGHT);
+
+            int startIndex = builder.AddVertices(verts);
+
+            // Iterate over and add each face
+            for (int vIndex = 0; vIndex < indices.Length; vIndex += 6)
+            {
+                indices[vIndex + 0] = startIndex + (vIndex / 6 * 4) + 0;
+                indices[vIndex + 1] = startIndex + (vIndex / 6 * 4) + 1;
+                indices[vIndex + 2] = startIndex + (vIndex / 6 * 4) + 2;
+                indices[vIndex + 3] = startIndex + (vIndex / 6 * 4) + 2;
+                indices[vIndex + 4] = startIndex + (vIndex / 6 * 4) + 1;
+                indices[vIndex + 5] = startIndex + (vIndex / 6 * 4) + 3;
+            }
+
+            builder.AddIndices(indices);
+        }
+
+        public static void AddCubeTransformed(this GeometryBuilder<VertexPositionNormalTexture> builder, float v1, float v2, float v3, float v4, float v5, float v6, Matrix matrix)
+        {
+            builder.AddCubeTransformed(new Vector3(v1, v2, v3), new Vector3(v4, v5, v6), matrix);
+        }
+
         public static void AddCube(this GeometryBuilder<VertexPositionNormalTexture> builder, float x1, float y1, float z1, float x2, float y2, float z2)
         {
             builder.AddCube(new Vector3(x1, y1, z1), new Vector3(x2, y2, z2));

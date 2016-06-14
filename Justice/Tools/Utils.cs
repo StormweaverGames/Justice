@@ -14,6 +14,11 @@ namespace Justice.Tools
     public static class Utils
     {
 
+        public static BEPUutilities.Vector3 ToVector3(this BEPUutilities.Vector4 value)
+        {
+            return new BEPUutilities.Vector3(value.X, value.Y, value.Z);
+        }
+
         public static Microsoft.Xna.Framework.Matrix Convert(this BEPUutilities.Matrix source)
         {
             Microsoft.Xna.Framework.Matrix result;
@@ -122,31 +127,20 @@ namespace Justice.Tools
             return result;
         }
 
-        public static BEPUphysics.Entities.Prefabs.Box GeneratePhysicsBox(this Microsoft.Xna.Framework.BoundingBox bounds)
+        public static CompoundShapeEntry GeneratePhysicsBox(this Microsoft.Xna.Framework.BoundingBox bounds)
         {
             BEPUutilities.Vector3 center = ((bounds.Min + bounds.Max) / 2).Convert();
             Microsoft.Xna.Framework.Vector3 size = bounds.Max - bounds.Min;
 
-            return new BEPUphysics.Entities.Prefabs.Box(center, size.X, size.Y, size.Z);
+            return new CompoundShapeEntry(new BoxShape(size.X, size.Y, size.Z), center);
         }
 
-        public static BEPUphysics.Entities.Prefabs.Box GeneratePhysicsBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+        public static CompoundShapeEntry GeneratePhysicsBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
         {
             BEPUutilities.Vector3 center = new BEPUutilities.Vector3(maxX + minX, maxY + minY, maxZ + minZ) / 2.0f;
             BEPUutilities.Vector3 size = new BEPUutilities.Vector3(maxX - minX, maxY - minY, maxZ - minZ);
 
-            return new BEPUphysics.Entities.Prefabs.Box(center, size.X, size.Y, size.Z);
-        }
-
-        public static BEPUphysics.Entities.Prefabs.Box GeneratePhysicsBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float friction)
-        {
-            BEPUutilities.Vector3 center = new BEPUutilities.Vector3(maxX + minX, maxY + minY, maxZ + minZ) / 2.0f;
-            BEPUutilities.Vector3 size = new BEPUutilities.Vector3(maxX - minX, maxY - minY, maxZ - minZ);
-
-            BEPUphysics.Entities.Prefabs.Box box = new BEPUphysics.Entities.Prefabs.Box(center, size.X, size.Y, size.Z);
-
-            box.Material = new Material(friction, friction, 1.0f);
-            return box;
+            return new CompoundShapeEntry(new BoxShape(size.X, size.Y, size.Z), center);
         }
 
         public static void FloodFill<T>(T[,] array, int x, int y, T replaceValue, T value, ref int numTiles)

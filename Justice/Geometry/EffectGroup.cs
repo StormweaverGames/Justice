@@ -133,6 +133,36 @@ namespace Justice.Geometry
             }
         }
 
+        public void RenderShadows(GraphicsDevice graphics, IEffectInterface shadowEffect, BoundingFrustum viewFrustum, ICamera view)
+        {
+            IRenderable renderable;
+
+            // Iterate over each pass in the technique
+            for (int passIndex = 0; passIndex < shadowEffect.Technique.Passes.Count; passIndex++)
+            {
+                // Iterate over all renderables
+                for (int index = 0; index < myRenderables.Count; index++)
+                {
+                    renderable = myRenderables[index];
+
+                    // Check first for null, then perform a rough pass filter, then fine pass
+                    if (renderable != null && renderable.IsVisible && renderable.ShouldRender(viewFrustum))
+                    {
+                        // Set the world matrix and apply the per-instance parameters
+                        shadowEffect.SetWorldMatrix(renderable.WorldTransform);
+                        shadowEffect.SetLocalMatrix(renderable.LocalTransform);
+                        shadowEffect.CalculateInstanceParams();
+
+                        // Apply the pas so prepare for rendering
+                        shadowEffect.Technique.Passes[passIndex].Apply();
+
+                        // If the item should be rendered, draw that bitch
+                        renderable.RenderShadow(graphics, view.Matrices);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Renders this effect grouping
         /// </summary>
@@ -151,9 +181,7 @@ namespace Justice.Geometry
 
             if (DepthStencilState != null)
                 graphics.DepthStencilState = DepthStencilState;
-
-            EffectTechnique technique = myEffect.Technique;
-
+            
             // Apply the view and projection matrices
             myEffect.SetProjectionMatrix(camera.Matrices.Projection);
             myEffect.SetViewMatrix(camera.Matrices.View);
@@ -161,35 +189,42 @@ namespace Justice.Geometry
             myEffect.CalculateFrameParams();
 
             EffectMaterial currentMaterial = new EffectMaterial();
+            int currentMaterialId = -1;
+
+            IRenderable renderable;
 
             // Iterate over each pass in the technique
-            for (int passIndex = 0; passIndex < technique.Passes.Count; passIndex++)
-            {
-                // Applies the current effect pass
-                technique.Passes[passIndex].Apply();
-                                
+            for (int passIndex = 0; passIndex < myEffect.Technique.Passes.Count; passIndex++)
+            {                                
                 // Iterate over all renderables
                 for (int index = 0; index < myRenderables.Count; index++)
                 {
+                    renderable = myRenderables[index];
+
                     // Check first for null, then perform a rough pass filter, then fine pass
-                    if (myRenderables[index] != null && myRenderables[index].IsVisible && myRenderables[index].ShouldRender(cameraFrustum))
+                    if (renderable != null && renderable.IsVisible && renderable.ShouldRender(cameraFrustum))
                     {
-                        if (MaterialManager.Instance[myRenderables[index].MaterialId] != currentMaterial)
+                        if (renderable.MaterialId != currentMaterialId)
                         {
-                            currentMaterial = MaterialManager.Instance[myRenderables[index].MaterialId];
+                            currentMaterialId = renderable.MaterialId;
+                            currentMaterial = renderable.Material;
                             myEffect.ApplyMaterial(currentMaterial);
                             graphics.SamplerStates[0] = currentMaterial.DiffuseSampler;
                         }
 
-                        myRenderables[index].PreRender(graphics, camera);
+                        // Performe the pre-render operation
+                        renderable.PreRender(graphics, camera);
 
-                        myEffect.SetWorldMatrix(myRenderables[index].WorldTransform);
+                        // Set the world matrix and apply the per-instance parameters
+                        myEffect.SetWorldMatrix(renderable.WorldTransform);
+                        myEffect.SetLocalMatrix(renderable.LocalTransform);
                         myEffect.CalculateInstanceParams();
 
-                        technique.Passes[passIndex].Apply();
+                        // Apply the pas so prepare for rendering
+                        myEffect.Technique.Passes[passIndex].Apply();
 
                         // If the item should be rendered, draw that bitch
-                        myRenderables[index].Render(graphics, camera.Matrices);
+                        renderable.Render(graphics, camera.Matrices);
                     }
                 }
             }

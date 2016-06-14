@@ -54,6 +54,7 @@
     <Compile Include="Geometry\BasicEffectInterface.cs" />
     <Compile Include="Geometry\CameraMatrices.cs" />
     <Compile Include="Geometry\EffectGroup.cs" />
+    <Compile Include="Geometry\GBuffer.cs" />
     <Compile Include="Geometry\ICamera.cs" />
     <Compile Include="Geometry\IEffectInterface.cs" />
     <Compile Include="Geometry\EffectMaterial.cs" />
@@ -69,7 +70,11 @@
     <Compile Include="Geometry\SkyBox.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpaceGame\Emulator\ByteCode.cs" />
+    <Compile Include="SpaceGame\Emulator\Console.cs" />
+    <Compile Include="SpaceGame\SASModule.cs" />
     <Compile Include="SpaceGame\Ship.cs" />
+    <Compile Include="SpaceGame\ShipGravityField.cs" />
     <Compile Include="Tools\BEPUSerializers.cs" />
     <Compile Include="Tools\CityGenerator.cs" />
     <Compile Include="Tools\FiniteStateMachine.cs" />
@@ -127,6 +132,7 @@
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Content\test.vm" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

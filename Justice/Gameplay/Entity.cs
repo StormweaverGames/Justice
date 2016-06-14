@@ -38,7 +38,33 @@ namespace Justice.Gameplay
             get;
             set;
         }
-        
+        public override Matrix WorldTransform
+        {
+            get
+            {
+                return myRenderable != null ? myRenderable.WorldTransform : Matrix.Identity;
+            }
+            set
+            {
+                if (myRenderable != null)
+                    myRenderable.WorldTransform = value;
+            }
+        }
+
+        public override Matrix LocalTransform
+        {
+            get
+            {
+                return myRenderable != null ? myRenderable.LocalTransform : Matrix.Identity;
+            }
+
+            set
+            {
+                if (myRenderable != null)
+                    myRenderable.LocalTransform = value;
+            }
+        }
+
         protected Entity()
         {
             myRenderable = null;
@@ -53,6 +79,11 @@ namespace Justice.Gameplay
         public override void Init(GraphicsDevice graphics)
         {
             myRenderable?.Init(graphics);
+        }
+        
+        public override void RenderShadow(GraphicsDevice graphics, CameraMatrices matrices)
+        {
+            myRenderable?.RenderShadow(graphics, matrices);
         }
 
         public override void Render(GraphicsDevice graphics, CameraMatrices matrices)

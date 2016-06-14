@@ -1,4 +1,6 @@
-﻿using BEPUphysics.Entities.Prefabs;
+﻿using BEPUphysics.CollisionShapes;
+using BEPUphysics.CollisionShapes.ConvexShapes;
+using BEPUphysics.Entities.Prefabs;
 using Justice.Geometry;
 using Justice.Tools;
 using Microsoft.Xna.Framework;
@@ -41,11 +43,13 @@ namespace Justice.Tools
             GeometryBuilder<VertexPositionNormalTexture> builder = new GeometryBuilder<VertexPositionNormalTexture>(PrimitiveType.TriangleList);
             //MultiMesh mesh = new MultiMesh();
 
+            List<CompoundShapeEntry> shapeEntries = new List<CompoundShapeEntry>();
+
             for (int x = 0; x < xBlocks; x ++)
             {
                 for(int y = 0; y < yBlocks; y ++)
                 {
-                    GenerateBlock(builder, scene, x * 160, y * 160, 110, 110);
+                    GenerateBlock(builder, shapeEntries, x * 160, y * 160, 110, 110);
 
                     // Sidewalks
                     builder.AddCube(x * 160 - 5, y * 160 - 5, 0, x * 160 + 115f, y * 160 + 115, 0.215f);
@@ -56,11 +60,14 @@ namespace Justice.Tools
 
                     // Intersection
                     builder.AddCube(x * 160 - 45, y * 160 - 45, 0, x * 160 - 5, y * 160 - 5, 0.015f);
-
-                    Box floorPlane = Utils.GeneratePhysicsBox(x * 160 - 45, y * 160 - 45, -5, x * 160 + 115, y * 160 + 115, 0.215f, 0.25f);
-                    scene.AddCollider(floorPlane);              
+                    
+                    shapeEntries.Add(Utils.GeneratePhysicsBox(x * 160 - 45, y * 160 - 45, -5, x * 160 + 115, y * 160 + 115, 0.215f));       
                 }
             }
+
+            CompoundBody worldCollider = new CompoundBody(shapeEntries);
+
+            scene.AddCollider(worldCollider);
 
             GeometryMesh part = builder.Bake(graphics, 0);
             scene.AddRenderable("opaque", part);
@@ -70,7 +77,7 @@ namespace Justice.Tools
             //return mesh;
         }
 
-        public void GenerateBlock(GeometryBuilder<VertexPositionNormalTexture> builder, IScene scene, float startX, float startY, int width, int height)
+        public void GenerateBlock(GeometryBuilder<VertexPositionNormalTexture> builder, List<CompoundShapeEntry> shapeEntries, float startX, float startY, int width, int height)
         {            
             if (width % 10 != 0 || height % 10 != 0)
                 throw new ArgumentException("Width and height must be multiples of 10");
@@ -131,8 +138,7 @@ namespace Justice.Tools
                 {
                     builder.AddCube(bounds.Min.X + 2.5f, bounds.Min.Y + 2.5f, bounds.Min.Z, bounds.Max.X - 2.5f, bounds.Max.Y - 2.5f, bounds.Max.Z);
                     Vector3 center = (bounds.Max + bounds.Min) / 2.0f;
-                    Box buildingBox = new Box(new BEPUutilities.Vector3(center.X, center.Y, center.Z), bounds.Max.X - bounds.Min.X - 5, bounds.Max.Y - bounds.Min.Y - 5, bounds.Max.Z - bounds.Min.Z);
-                    scene.AddCollider(buildingBox);
+                    shapeEntries.Add(Utils.GeneratePhysicsBox(bounds.Min.X + 2.5f, bounds.Min.Y + 2.5f, bounds.Min.Z, bounds.Max.X - 2.5f, bounds.Max.Y - 2.5f, bounds.Max.Z));
                 }
             }
         }

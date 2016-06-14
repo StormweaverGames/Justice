@@ -22,9 +22,10 @@ namespace Justice.Geometry
 
         private EffectParameter myWVPParameter;
 
-        private Matrix myWorld;
-        private Matrix myView;
-        private Matrix myProjection;
+        private Matrix myLocal = Matrix.Identity;
+        private Matrix myWorld = Matrix.Identity;
+        private Matrix myView = Matrix.Identity;
+        private Matrix myProjection = Matrix.Identity;
         
         public EffectTechnique Technique
         {
@@ -68,12 +69,14 @@ namespace Justice.Geometry
         }
 
         Matrix __worldView;
+        Matrix __totalTransform;
         Matrix __wvp;
         public void CalculateInstanceParams()
         {
             if (myWVPParameter != null)
             {
-                Matrix.Multiply(ref myWorld, ref myView, out __worldView);
+                Matrix.Multiply(ref myLocal, ref myWorld, out __totalTransform);
+                Matrix.Multiply(ref __totalTransform, ref myView, out __worldView);
                 Matrix.Multiply(ref __worldView, ref myProjection, out __wvp);
 
                 myWVPParameter.SetValue(__wvp);
@@ -84,10 +87,11 @@ namespace Justice.Geometry
                 Matrix worldTranspose;
                 Matrix worldInverseTranspose;
 
-                Matrix.Invert(ref myWorld, out worldTranspose);
+                Matrix.Multiply(ref myLocal, ref myWorld, out __totalTransform);
+                Matrix.Invert(ref __totalTransform, out worldTranspose);
                 Matrix.Transpose(ref worldTranspose, out worldInverseTranspose);
 
-                myWorldParameter?.SetValue(myWorld);
+                myWorldParameter?.SetValue(__totalTransform);
                 myInverseWorldParameter?.SetValue(worldInverseTranspose);
             }
         }
@@ -98,6 +102,14 @@ namespace Justice.Geometry
                 myWorldParameter.SetValue(value);
             else
                 myWorld = value;
+        }
+
+        public void SetLocalMatrix(Matrix value)
+        {
+            if (myWorldParameter != null)
+                myWorldParameter.SetValue(value * myWorld);
+            else
+                myLocal = value;
         }
 
         public void ApplyMaterial(EffectMaterial material)

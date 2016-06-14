@@ -80,11 +80,11 @@ namespace Justice.Geometry
                     {
                         SpawnParticle(ref myParticles[index], false);
                     }
-
+                    
                     for (int i = 0; i < VERTS_PER_NODE; i ++)
                     {
-                        myVertices[index * VERTS_PER_NODE + (i * 2)].Position = (myParticles[index].Position + OFFSETS[i]) - myParticles[index].Direction / 8.0f;
-                        myVertices[index * VERTS_PER_NODE + (i * 2) + 1].Position = (myParticles[index].Position + OFFSETS[i]);
+                        Vector3.Add(ref myParticles[index].Position, ref OFFSETS[i], out myVertices[index * VERTS_PER_NODE + (i * 2) + 1].Position);
+                        Vector3.Subtract(ref myVertices[index * VERTS_PER_NODE + (i * 2) + 1].Position, ref myParticles[index].Direction, out myVertices[index * VERTS_PER_NODE + (i * 2)].Position);
                     }
                 }
             }
@@ -93,6 +93,11 @@ namespace Justice.Geometry
         public override void PreRender(GraphicsDevice graphics, ICamera camera)
         {
             WorldTransform = Matrix.CreateTranslation(Matrix.Invert(camera.Matrices.View).Translation);
+        }
+        
+        public override void RenderShadow(GraphicsDevice graphics, CameraMatrices matrices)
+        {
+            // We don't cast shadows fo the skybox
         }
 
         public override void Render(GraphicsDevice graphics, CameraMatrices matrices)

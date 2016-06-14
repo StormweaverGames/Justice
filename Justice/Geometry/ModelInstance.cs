@@ -105,6 +105,12 @@ namespace Justice.Geometry
         {
         }
 
+
+        public override void RenderShadow(GraphicsDevice graphics, CameraMatrices matrices)
+        {
+            Render(graphics, matrices);
+        }
+
         /// <summary>
         /// Renders this model instance
         /// </summary>

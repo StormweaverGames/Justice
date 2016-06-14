@@ -15,30 +15,6 @@ namespace Justice.Geometry
     /// </summary>
     public abstract class IScene
     {
-        private class NullTextureBinder : IRenderable
-        {
-            public override bool IsPreRendered
-            {
-                get { return true; }
-            }
-
-            private static readonly BoundingBox BOUNDS = new BoundingBox();
-            public override BoundingBox RenderBounds
-            {
-                get { return BOUNDS; }
-            }
-
-            public override void Init(GraphicsDevice graphics)
-            {
-            }
-
-            public override void Render(GraphicsDevice graphics, CameraMatrices matrices)
-            {
-                graphics.Textures[0] = null;
-            }
-        }
-
-
         /// <summary>
         /// Stores the list of human input controlers in this scene
         /// </summary>
@@ -48,6 +24,12 @@ namespace Justice.Geometry
         /// </summary>
         protected Dictionary<string, EffectGroup> myEffectGroups;
         protected List<EffectGroup> myEffectList;
+
+        public IEffectInterface ShadowEffect
+        {
+            get;
+            set;
+        }
 
         protected Space myPhysicsSpace;
 
@@ -212,6 +194,38 @@ namespace Justice.Geometry
 
             // Creates the camera frustum to use
             BoundingFrustum cameraFrustum = new BoundingFrustum(camera.Matrices.ViewProj);
+
+            // Only run the shadow pass if we have a shadow shader
+            if (ShadowEffect != null)
+            {
+                // Bind the default graphics settings
+                graphics.RasterizerState = RasterizerState.CullCounterClockwise;
+                graphics.BlendState = BlendState.Opaque;
+                graphics.DepthStencilState = DepthStencilState.DepthRead;
+
+                // Iterate over all lights
+                for (int lightIndex = 0; lightIndex < 100; lightIndex++)
+                {
+                    // If the light at the given index intersects our camera's view, render it
+                    if (true)
+                    {
+                        // Set the view and projection matrices
+                        ShadowEffect.SetViewMatrix(camera.Matrices.View);
+                        ShadowEffect.SetProjectionMatrix(camera.Matrices.Projection);
+
+                        // Calculate per-frame parameters
+                        ShadowEffect.CalculateFrameParams();
+
+                        // Iterate over all the effect groupings
+                        for (int index = 0; index < myEffectList.Count; index++)
+                        {
+                            // We only shadow things that don't use alpha blending
+                            if (myEffectList[index].BlendState != BlendState.AlphaBlend)
+                                myEffectList[index].RenderShadows(graphics, ShadowEffect, cameraFrustum, camera);
+                        }
+                    }
+                }
+            }
 
             for (int index = 0; index < myEffectList.Count; index++)
             {

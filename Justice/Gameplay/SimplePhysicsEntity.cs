@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using BEPUphysics.Paths;
 using Microsoft.Xna.Framework;
 using Justice.Tools;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Justice.Gameplay
 {
@@ -54,7 +55,9 @@ namespace Justice.Gameplay
         {
             base.Update(gameTime);
 
-
+            if (myRenderable != null && myPhysicsEntity != null)
+                myRenderable.WorldTransform = myPhysicsEntity.WorldTransform.Convert();
+            
             if (FollowPath != null)
                 myPhysicsEntity.Position = FollowPath.Evaluate(gameTime.TotalGameTime.TotalSeconds);
         }

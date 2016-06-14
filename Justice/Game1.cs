@@ -39,6 +39,9 @@ namespace Justice
         
         InterfaceManger myInterface;
 
+        Ship ship;
+        SASModule mySas;
+
         bool isRayIntersecting;
          
         public Game1()
@@ -234,7 +237,7 @@ namespace Justice
             geometryBuilder.AddCube(-10, -10, -0.25f, 10, 10, 0.25f);
             GeometryMesh lift = geometryBuilder.Bake(GraphicsDevice, contreteId);
 
-            SimplePhysicsEntity liftEntity = new SimplePhysicsEntity(lift.RenderBounds.GeneratePhysicsBox(), 0, lift);
+            SimplePhysicsEntity liftEntity = new SimplePhysicsEntity(new BEPUphysics.Entities.Entity(lift.RenderBounds.GeneratePhysicsBox().Shape), 0, lift);
             liftEntity.Position = new Vector3(0, 20, 15);
 
             CardinalSpline3D elevatorPath = new CardinalSpline3D();
@@ -293,26 +296,92 @@ namespace Justice
 
             CityGenerator gen = new CityGenerator();
             geometryBuilder.Clear();
+
+            ship = new Ship();
+            geometryBuilder.Clear();
+
+            // Major blocks
+            geometryBuilder.AddCube(-5, -5, -5,   5, 5, 5);
+            geometryBuilder.AddCube(-1.5f, 15, -5,   1.5f, 25, 5);
+            geometryBuilder.AddCubeTransformed(-5, -2, -0.5f,  5, 2, 0.5f, Matrix.CreateTranslation(0, 23f, 4.5f));
+            geometryBuilder.AddCubeTransformed(-5, -2, -0.375f,  5, 2, 0.375f, Matrix.CreateTranslation(0, 7f, -4.625f));
+
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(10, 10, 10));
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(3, 10, 10), new Vector3(0.0f, 20, 0));
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(10, 4f, 1), new Vector3(0.0f, 23f, 4.5f));
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(10, 4f, 0.75f), new Vector3(0.0f, 7f, -4.625f));
+
+            // Walkway
+            geometryBuilder.AddCube(-1.5f, 5, 4,   1.5f, 15, 5);
+
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(3, 10, 1), new Vector3(0, 10, 4.5f));
+
+            // End caps
+            geometryBuilder.AddCube(-5, -5, 5,   5, -4, 7);
+            geometryBuilder.AddCube(-5, 24, 5,   5, 25, 7);
+
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(10, 1, 2), new Vector3(0, -4.5f, 6));
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(10, 1, 2), new Vector3(0, 24.5f, 6));
+
+            // Walkway entrances
+            //geometryBuilder.AddCube(-5, 5, 5,    -2, 4, 7);
+            //geometryBuilder.AddCube(2, 5, 5,     5, 4, 7);
+            //geometryBuilder.AddCube(-5, 15, 5, -2, 16, 7);
+            //geometryBuilder.AddCube(2, 15, 5, 5, 16, 7);
+
+            //ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(3f, 1, 2), new Vector3(-3.5f, 4.5f, 6));
+            //ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(3, 1, 2), new Vector3(3.5f, 4.5f, 6));
+            //ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(3f, 1, 2), new Vector3(-3.5f, 15.5f, 6));
+            //ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(3, 1, 2), new Vector3(3.5f, 15.5f, 6));
+
+            // Side bars
+            geometryBuilder.AddCube(5, -4, 5,    4, 24, 7);
+            geometryBuilder.AddCube(-5, -4, 5,   -4, 24, 7);
+            //geometryBuilder.AddCube(5, 16, 5, 4, 24, 7);
+            //geometryBuilder.AddCube(-5, 16, 5, -4, 24, 7);
+
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(1, 30, 2), new Vector3(4.5f, 20, 6));
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(1, 30, 2), new Vector3(-4.5f, 20, 6));
+            //ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(1, 10, 2), new Vector3(4.5f, 20, 6));
+            //ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(1, 10, 2), new Vector3(-4.5f, 20, 6));
+
+            // Ramps
+            Quaternion rotate = Quaternion.CreateFromAxisAngle(Vector3.UnitX, MathHelper.ToRadians(38.0f));
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(4f, 15.0f, 1f), new Vector3(3f, 15, -0.05f), rotate);
+            geometryBuilder.AddCubeTransformed(-2f, -7.5f, -0.5f, 2f, 7.5f, 0.5f, Matrix.CreateFromQuaternion(rotate) * Matrix.CreateTranslation(3f, 15, -0.05f));
+
+            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(4f, 15.0f, 1f), new Vector3(-3f, 15, -0.05f), rotate);
+            geometryBuilder.AddCubeTransformed(-2f, -7.5f, -0.5f, 2f, 7.5f, 0.5f, Matrix.CreateFromQuaternion(rotate) * Matrix.CreateTranslation(-3f, 15, -0.05f));
+
+            ship.SetRenderable(geometryBuilder.Bake(GraphicsDevice, contreteId));
+            ship.BakeShape(-1.0f, new Vector3(-15, -15, 5));
+
+            mySas = new SASModule(ship);
+            //mySas.GravityCompensation = new Vector3(0, 0, 9.81f);
+            scene.AddUpdateable(mySas);
+
+            BinaryWriter writer = new BinaryWriter(File.OpenWrite("test.sgl"));
+            ship.Save(writer);
+            writer.Close();
+
             
             scene.AddRenderable("skybox", skyBox);
             scene.AddRenderable("opaque", myRain);
             scene.AddRenderable("opaque", awning);
             scene.Add("opaque", liftEntity);
+            scene.Add("opaque", ship);
             gen.GenerateCity(scene, GraphicsDevice, effect, 10, 10);
             //scene.AddRenderable(mesh);
             scene.AddRenderable("transparent", blood);
             scene.AddRenderable("transparent", fence);
 
+            BasicEffectInterface shadowInterface = new BasicEffectInterface(new BasicEffect(GraphicsDevice) { TextureEnabled = false, VertexColorEnabled = false }, "BasicEffect");
+            shadowInterface.InitBasicEffect();
+            scene.ShadowEffect = shadowInterface;
+
             myScene = scene;
             myCamera = camera;
 
-            Ship ship = new Ship();
-            ship.AddShape(new BEPUphysics.CollisionShapes.ConvexShapes.BoxShape(10, 10, 10));
-            ship.BakeShape(1.0f);
-
-            BinaryWriter writer = new BinaryWriter(File.OpenWrite("test.sgl"));
-            ship.Save(writer);
-            writer.Close();
 
             myScene.IterateRenderables(X => X.Init(GraphicsDevice));
         }
@@ -341,6 +410,54 @@ namespace Justice
             myScene.Update(gameTime);
 
             myInterface.Update(gameTime);
+            
+            if (KeyboardManager.IsKeyDown(Keys.U))
+            {
+                float impulse = 5.0f;
+
+                ship.ApplyRelativeImpulse(new Vector3(-5, -5, -5), Vector3.UnitY * impulse);
+                ship.ApplyRelativeImpulse(new Vector3(-5, -5, -5), Vector3.UnitY * impulse);
+                ship.ApplyRelativeImpulse(new Vector3(5, -5, 5), Vector3.UnitY * impulse);
+                ship.ApplyRelativeImpulse(new Vector3(5, -5, 5), Vector3.UnitY * impulse);
+            }
+            if (KeyboardManager.IsKeyDown(Keys.J))
+            {
+                float impulse = 5.0f;
+
+                ship.ApplyRelativeImpulse(new Vector3(-5, 5, -5), Vector3.UnitY * -impulse);
+                ship.ApplyRelativeImpulse(new Vector3(-5, 5, -5), Vector3.UnitY * -impulse);
+                ship.ApplyRelativeImpulse(new Vector3(5, 5, 5), Vector3.UnitY * -impulse);
+                ship.ApplyRelativeImpulse(new Vector3(5, 5, 5), Vector3.UnitY * -impulse);
+            }
+
+            if (KeyboardManager.IsKeyDown(Keys.H))
+            {
+                float impulse = 5.0f;
+
+                ship.ApplyRelativeImpulse(new Vector3(-5, -5, -5), Vector3.UnitX * -impulse);
+                ship.ApplyRelativeImpulse(new Vector3(-5, 5, -5), Vector3.UnitX * -impulse);
+                ship.ApplyRelativeImpulse(new Vector3(-5, 5, 5), Vector3.UnitX * -impulse);
+                ship.ApplyRelativeImpulse(new Vector3(-5, -5, 5), Vector3.UnitX * -impulse);
+            }
+            if (KeyboardManager.IsKeyDown(Keys.K))
+            {
+                float impulse = 5.0f;
+
+                ship.ApplyRelativeImpulse(new Vector3(5, -5, -5), Vector3.UnitX * impulse);
+                ship.ApplyRelativeImpulse(new Vector3(5, 5, -5), Vector3.UnitX * impulse);
+                ship.ApplyRelativeImpulse(new Vector3(5, 5, 5), Vector3.UnitX * impulse);
+                ship.ApplyRelativeImpulse(new Vector3(5, -5, 5), Vector3.UnitX * impulse);
+            }
+
+            if (KeyboardManager.IsKeyDown(Keys.P))
+            {
+                float impulse = 15.0f;
+
+                ship.ApplyRelativeImpulse(new Vector3(-5, -5, -5), Vector3.UnitZ * impulse);
+                ship.ApplyRelativeImpulse(new Vector3(-5, 5, -5), Vector3.UnitZ * impulse);
+                ship.ApplyRelativeImpulse(new Vector3(5, -5, -5), Vector3.UnitZ * impulse);
+                ship.ApplyRelativeImpulse(new Vector3(5, 5, -5), Vector3.UnitZ * impulse);
+            }
 
             myRain.Update(gameTime);
             

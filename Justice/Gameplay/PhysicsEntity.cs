@@ -12,7 +12,7 @@ namespace Justice.Gameplay
     public abstract class PhysicsEntity : Entity
     {
         protected BEPUphysics.Entities.Entity myPhysicsEntity;
-        
+                
         public override Vector3 Position
         {
             get { return myPhysicsEntity.Position.Convert(); }
@@ -27,6 +27,21 @@ namespace Justice.Gameplay
         {
             get { return myPhysicsEntity.LinearVelocity.Convert(); }
             set { myPhysicsEntity.LinearVelocity = value.Convert(); }
+        }
+        public Vector3 AngularVelocity
+        {
+            get { return myPhysicsEntity.AngularVelocity.Convert(); }
+            set { myPhysicsEntity.AngularVelocity = value.Convert(); }
+        }
+        public Vector3 Momentum
+        {
+            get { return myPhysicsEntity.LinearMomentum.Convert(); }
+            set { myPhysicsEntity.LinearMomentum = value.Convert(); }
+        }
+        public Vector3 AngularMomentum
+        {
+            get { return myPhysicsEntity.AngularMomentum.Convert(); }
+            set { myPhysicsEntity.AngularMomentum = value.Convert(); }
         }
         public float Mass
         {

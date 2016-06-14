@@ -1,0 +1,5 @@
+﻿START:
+ LDA #65
+ LDX #0xA000
+ STA ,X
+ END START
